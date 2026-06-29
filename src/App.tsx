@@ -3,7 +3,7 @@ import { Sidebar } from './components/Sidebar'
 import { useTabsStore } from './store/tabsStore'
 import styles from './App.module.scss'
 import { Tablet } from './components/Tablet/Tablet'
-import { OngoingTab } from './tabs/OngoingTab/OngoinTab'
+import { OngoingTab } from './tabs/OngoingTab/OngoingTab'
 
 function App() {
   const activeTab = useTabsStore((s) => s.activeTab)
