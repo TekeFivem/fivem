@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { BidIcon, UsersIcon, LocationIcon, CompassIcon } from '../icons'
+import { BidIcon, UsersIcon, LocationIcon, CompassIcon, AlarmIcon } from '../icons'
 import styles from './SelfStorage.module.scss'
 import { MetalBadge } from '../MetalBadge/MetalBadge'
 import { SevenSegment } from '../SevenSegment/SevenSegment'
@@ -14,6 +14,8 @@ export interface SelfStorageProps {
   endTime: string // "01:23:45"
   bid: number // 10000 -> "10000$"
   participants: number
+  variant?: 'ongoing' | 'upcoming'
+  onRemind?: (active: boolean) => void
   onJoin?: () => void
   /** pusula aktif olduğunda tetiklenir (ileride waypoint set) */
   onWaypoint?: (active: boolean) => void
@@ -27,10 +29,21 @@ export const SelfStorage = ({
   participants,
   onJoin,
   onWaypoint,
+  onRemind,
+  variant = 'ongoing'
 }: SelfStorageProps) => {
   const [marked, setMarked] = useState(false)
   const [compassActive, setCompassActive] = useState(false)
   const remaining = useCountdown(endTime)
+  const [reminded, setReminded] = useState(false)
+
+  const handleReminder = () => {
+    setReminded((prev) => {
+      const next = !prev
+      onRemind?.(next)
+      return next
+    })
+  }
 
   const handleLocation = () => {
     setMarked((prev) => {
@@ -94,9 +107,35 @@ export const SelfStorage = ({
           )}
         </div>
 
-        <button type="button" className={styles.joinBtn} onClick={onJoin}>
-          Join
-        </button>
+        {variant === 'upcoming' ? (
+          <div className={styles.reminderRow}>
+            <button
+              type="button"
+              onClick={handleReminder}
+              className={[styles.joinBtn, reminded && styles.reminderActive].filter(Boolean).join(' ')}
+            >
+              <span className={styles.btnIcon}>
+                <AlarmIcon />
+              </span>
+              Reminder
+            </button>
+
+            {reminded && (
+              <button
+                type="button"
+                aria-label="Alarm"
+                onClick={handleReminder}
+                className={[styles.alarm, styles.alarmActive].join(' ')}
+              >
+                <AlarmIcon />
+              </button>
+            )}
+          </div>
+        ) : (
+          <button type="button" className={styles.joinBtn} onClick={onJoin}>
+            Join
+          </button>
+        )}
       </div>
     </div>
   )

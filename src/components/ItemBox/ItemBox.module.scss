@@ -252,3 +252,52 @@
   color: #ff5252;
   box-shadow: 0 0 8px #ff5252;
 }
+
+/* ---- Reminder (Upcoming) — Location/Compass ile aynı mantık ---- */
+.reminderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Reminder aktif → buton sarı glow */
+.reminderActive {
+  color: #b8860b;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    0 0 8px #ffd84d,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Çalar saat (pusula muadili) */
+.alarm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #6b7079;
+
+  @include metallic-surface(160deg);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
+
+  svg { width: 18px; height: 18px; }
+  &:active { transform: scale(0.92); }
+}
+
+/* Çalar saat aktif → "çalıyor" efekti */
+.alarm.alarmActive {
+  filter: none;
+  color: #ffb300;
+  box-shadow: 0 0 8px #ffb300;
+  animation: alarmRing 0.8s ease-in-out infinite;
+}
+
+@keyframes alarmRing {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-12deg); }
+  75%      { transform: rotate(12deg); }
+}
