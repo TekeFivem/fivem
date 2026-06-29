@@ -1,0 +1,65 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1c1f25;
+  opacity: 0.85;
+}
+
+.segments {
+  display: inline-flex;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.seg {
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1c1f25;
+
+  // düz metal — ortada koyu band YOK
+  background: linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
+  filter: grayscale(1) brightness(0.96);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+
+  & + & {
+    border-left: 1px solid rgba(0, 0, 0, 0.35);
+  }
+  &:hover { filter: grayscale(0.4) brightness(1.02); }
+  &:active { transform: translateY(1px); }
+}
+
+// aktif (seçili) → grayscale kalkar + accent glow
+.active {
+  filter: none;
+  color: #11141a;
+
+  // accent solid + üstte beyaz highlight katmanı (color-mix gerektirmez)
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%),
+    var(--seg-accent, #46e06b);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 0 10px var(--seg-accent, #46e06b);
+}
