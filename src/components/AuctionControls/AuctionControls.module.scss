@@ -1,0 +1,115 @@
+@use '../../styles/mixins' as *;
+
+.locationRow,
+.reminderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.locBtn,
+.joinBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1c1f25;
+
+  @include metallic-surface(160deg);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.08s ease, box-shadow 0.15s ease, color 0.15s ease;
+
+  &:active { transform: scale(0.97); }
+}
+
+.btnIcon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+/* Location marked */
+.locActive {
+  color: #b8860b;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    0 0 8px #ffd84d,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Pusula */
+.compass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #6b7079;
+
+  @include metallic-surface(160deg);
+  filter: grayscale(1);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
+
+  svg { width: 18px; height: 18px; }
+  &:active { transform: scale(0.92); }
+}
+
+.compassActive {
+  filter: none;
+  color: #ff5252;
+  box-shadow: 0 0 8px #ff5252;
+}
+
+/* Reminder aktif → sarı glow */
+.reminderActive {
+  color: #b8860b;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    0 0 8px #ffd84d,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Çalar saat (pusula muadili) */
+.alarm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #6b7079;
+
+  @include metallic-surface(160deg);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
+
+  svg { width: 18px; height: 18px; }
+  &:active { transform: scale(0.92); }
+}
+
+.alarm.alarmActive {
+  filter: none;
+  color: #ffb300;
+  box-shadow: 0 0 8px #ffb300;
+  animation: alarmRing 0.8s ease-in-out infinite;
+}
+
+@keyframes alarmRing {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-12deg); }
+  75%      { transform: rotate(12deg); }
+}

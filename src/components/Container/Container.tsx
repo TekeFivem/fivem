@@ -1,157 +1,45 @@
-import { useState } from 'react'
-
-import { BidIcon, UsersIcon, LocationIcon, CompassIcon, AlarmIcon } from '../icons'
 import styles from './Container.module.scss'
-import { MetalBadge } from '../MetalBadge/MetalBadge'
-import { SevenSegment } from '../SevenSegment/SevenSegment'
-import { useCountdown } from '../../hooks/useCountdown'
-
-export type ContainerTier = 'bronze' | 'silver' | 'gold'
-
-export interface ContainerProps {
-    name: string
-    tier?: ContainerTier
-    endTime: string // "01:23:45"
-    bid: number // 10000 -> "10000$"
-    participants: number
-    variant?: 'ongoing' | 'upcoming'
-    onRemind?: (active: boolean) => void
-    onJoin?: () => void
-    /** pusula aktif olduğunda tetiklenir (ileride waypoint set) */
-    onWaypoint?: (active: boolean) => void
-}
+import { AuctionControls } from '../AuctionControls/AuctionControls'
+import { NameBadge, TimerBadge, BidBadge, PartBadge } from '../AuctionStats/AuctionStats'
+import { useAuctionCard } from '../../hooks/useAuctionCard'
+import type { AuctionCardProps } from '../../lib/auctions'
 
 export const Container = ({
-    name,
-    tier = 'bronze',
-    endTime,
-    bid,
-    participants,
-    onJoin,
-    onWaypoint,
-    onRemind,
-    variant = 'ongoing'
-}: ContainerProps) => {
-    const [marked, setMarked] = useState(false)
-    const [compassActive, setCompassActive] = useState(false)
-    const remaining = useCountdown(endTime)
-    const [reminded, setReminded] = useState(false)
+  name, tier = 'bronze', endTime, bid, participants,
+  onJoin, onWaypoint, onRemind, variant = 'ongoing',
+}: AuctionCardProps) => {
+  const c = useAuctionCard({ endTime, onWaypoint, onRemind })
 
-    const handleReminder = () => {
-        setReminded((prev) => {
-            const next = !prev
-            onRemind?.(next)
-            return next
-        })
-    }
+  return (
+    <div className={[styles.unit, styles[tier]].join(' ')}>
+      <div className={styles.railTop} />
+      <div className={styles.railBottom} />
 
+      <NameBadge name={name} className={styles.tlName} />
+      <TimerBadge value={c.remaining} className={styles.trTimer} />
+      <BidBadge bid={bid} className={styles.blBid} />
+      <PartBadge participants={participants} className={styles.brPart} />
 
-    const handleLocation = () => {
-        setMarked((prev) => {
-            const next = !prev
-            setCompassActive(next) // marked olunca pusula aktif, unmark olunca kapanır
-            return next
-        })
-    }
+      <div className={styles.doors}>
+        <span className={styles.seam} />
+        <span className={[styles.rod, styles.rod1].join(' ')} />
+        <span className={[styles.rod, styles.rod2].join(' ')} />
+        <span className={[styles.rod, styles.rod3].join(' ')} />
+        <span className={[styles.rod, styles.rod4].join(' ')} />
 
-    const handleCompass = () => {
-        if (!marked) return
-        setCompassActive((a) => {
-            const next = !a
-            onWaypoint?.(next) // ileride: waypoint set
-            return next
-        })
-    }
-
-    return (
-        <div className={[styles.unit, styles[tier]].join(' ')}>
-            {/* ---- Üst / alt köşe casting rayları ---- */}
-            <div className={styles.railTop} />
-            <div className={styles.railBottom} />
-
-            {/* ---- Köşe tabelaları ---- */}
-            <MetalBadge className={styles.tlName}>{name}</MetalBadge>
-
-            <MetalBadge className={styles.trTimer}>
-                <SevenSegment value={remaining} color="#ff5252" size={16} />
-            </MetalBadge>
-
-            <MetalBadge className={styles.blBid} icon={<BidIcon />}>
-                <SevenSegment value={`${bid}$`} color="#5fe06f" size={15} />
-            </MetalBadge>
-
-            <MetalBadge className={styles.brPart} icon={<UsersIcon />}>
-                {participants}
-            </MetalBadge>
-
-            {/* ---- Çift kapı + dikey kilit çubukları ---- */}
-            <div className={styles.doors}>
-                <span className={styles.seam} />
-                {/* 4 locking rod */}
-                <span className={[styles.rod, styles.rod1].join(' ')} />
-                <span className={[styles.rod, styles.rod2].join(' ')} />
-                <span className={[styles.rod, styles.rod3].join(' ')} />
-                <span className={[styles.rod, styles.rod4].join(' ')} />
-
-                {/* ---- Kontroller (ortada) ---- */}
-                <div className={styles.controls}>
-                    <div className={styles.locationRow}>
-                        <button
-                            type="button"
-                            onClick={handleLocation}
-                            className={[styles.locBtn, marked && styles.locActive].filter(Boolean).join(' ')}
-                        >
-                            <span className={styles.btnIcon}>
-                                <LocationIcon />
-                            </span>
-                            Location
-                        </button>
-
-                        {marked && (
-                            <button
-                                type="button"
-                                onClick={handleCompass}
-                                aria-label="Compass"
-                                className={[styles.compass, compassActive && styles.compassActive]
-                                    .filter(Boolean)
-                                    .join(' ')}
-                            >
-                                <CompassIcon />
-                            </button>
-                        )}
-                    </div>
-
-                    {variant === 'upcoming' ? (
-                        <div className={styles.reminderRow}>
-                            <button
-                                type="button"
-                                onClick={handleReminder}
-                                className={[styles.joinBtn, reminded && styles.reminderActive].filter(Boolean).join(' ')}
-                            >
-                                <span className={styles.btnIcon}>
-                                    <AlarmIcon />
-                                </span>
-                                Reminder
-                            </button>
-
-                            {reminded && (
-                                <button
-                                    type="button"
-                                    aria-label="Alarm"
-                                    onClick={handleReminder}
-                                    className={[styles.alarm, styles.alarmActive].join(' ')}
-                                >
-                                    <AlarmIcon />
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <button type="button" className={styles.joinBtn} onClick={onJoin}>
-                            Join
-                        </button>
-                    )}
-                </div>
-            </div>
+        <div className={styles.controls}>
+          <AuctionControls
+            variant={variant}
+            marked={c.marked}
+            compassActive={c.compassActive}
+            reminded={c.reminded}
+            onLocation={c.handleLocation}
+            onCompass={c.handleCompass}
+            onReminder={c.handleReminder}
+            onJoin={onJoin}
+          />
         </div>
-    )
+      </div>
+    </div>
+  )
 }

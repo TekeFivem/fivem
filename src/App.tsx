@@ -4,7 +4,7 @@ import { useTabsStore } from './store/tabsStore'
 import styles from './App.module.scss'
 import { Tablet } from './components/Tablet/Tablet'
 import { OngoingTab } from './tabs/OngoingTab/OngoingTab'
-import { UpcomingTab } from './tabs/Upcoming/UpcomingTab'
+import { UpcomingTab } from './tabs/UpcomingTab/UpcomingTab'
 
 function App() {
   const activeTab = useTabsStore((s) => s.activeTab)

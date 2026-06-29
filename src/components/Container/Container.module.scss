@@ -18,7 +18,7 @@
   --tier-dark: #{$gold-dark};
 }
 
-/* ---- Container gövdesi: dikey oluklu çelik ---- */
+/* ---- Container gövdesi ---- */
 .unit {
   position: relative;
   width: 100%;
@@ -26,7 +26,6 @@
   border-radius: 8px;
   overflow: hidden;
 
-  // dikey korrugasyon (90deg = dikey ribler) + tier tonlu yüzey
   background:
     repeating-linear-gradient(
       90deg,
@@ -44,7 +43,7 @@
     0 6px 14px rgba(0, 0, 0, 0.55);
 }
 
-/* üst/alt köşe casting rayları */
+/* üst/alt raylar */
 .railTop,
 .railBottom {
   position: absolute;
@@ -60,7 +59,7 @@
 .railTop { top: 0; }
 .railBottom { bottom: 0; }
 
-/* köşe yerleşimi (rayların üstünde kalsın) */
+/* köşe yerleşimi */
 .tlName  { position: absolute; top: 2%; left: 10px; z-index: 3; }
 .trTimer { position: absolute; top: 2%; right: 10px; z-index: 3; }
 .blBid   { position: absolute; bottom: 2%; left: 10px; z-index: 3; }
@@ -80,13 +79,12 @@
   align-items: center;
   justify-content: center;
 
-  // hafif iç gölge: kapı paneli hissi
   box-shadow:
     inset 0 0 0 2px rgba(0, 0, 0, 0.4),
     inset 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
-/* iki kapı arası dikey ek yeri */
+/* dikey ek yeri */
 .seam {
   position: absolute;
   top: 0;
@@ -94,6 +92,7 @@
   left: 50%;
   width: 3px;
   transform: translateX(-50%);
+  z-index: 1;
   background: rgba(0, 0, 0, 0.55);
   box-shadow:
     -1px 0 1px rgba(255, 255, 255, 0.15),
@@ -106,17 +105,16 @@
   top: 4%;
   bottom: 4%;
   width: 4px;
+  z-index: 1;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--tier-dark), var(--tier-light), var(--tier-dark));
   box-shadow:
     0 0 2px rgba(0, 0, 0, 0.6),
     inset 0 0 1px rgba(255, 255, 255, 0.5);
 
-  // ortada kol (handle) hissi
   &::after {
     content: '';
     position: absolute;
-    top: 50%;
     left: 50%;
     width: 10px;
     height: 14px;
@@ -131,131 +129,18 @@
 .rod3 { right: 38%; }
 .rod4 { right: 18%; }
 
-/* ---- Kontroller (ortada, çubukların üstünde) ---- */
+/* ↓ her rod için ayrı top değeri */
+.rod1::after { top: 65%; }
+.rod2::after { top: 90%; }
+.rod3::after { top: 90%; }
+.rod4::after { top: 45%; }
+
+/* ---- Kontroller slotu ---- */
 .controls {
   position: relative;
-  z-index: 4;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
-}
-
-.locationRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.locBtn,
-.joinBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: 'NoctrdripSolidmelt', sans-serif;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #1c1f25;
-
-  @include metallic-surface(160deg);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.45),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.5);
-  transition: transform 0.08s ease, box-shadow 0.15s ease, color 0.15s ease;
-
-  &:active { transform: scale(0.97); }
-}
-
-.btnIcon {
-  display: inline-flex;
-  width: 14px;
-  height: 14px;
-}
-
-.locActive {
-  color: #b8860b;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.45),
-    0 0 8px #ffd84d,
-    0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.compass {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  color: #6b7079;
-
-  @include metallic-surface(160deg);
-  filter: grayscale(1);
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
-
-  svg { width: 18px; height: 18px; }
-  &:active { transform: scale(0.92); }
-}
-
-.compassActive {
-  filter: none;
-  color: #ff5252;
-  box-shadow: 0 0 8px #ff5252;
-}
-
-/* ---- Reminder (Upcoming) — Location/Compass ile aynı mantık ---- */
-.reminderRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Reminder aktif → buton sarı glow */
-.reminderActive {
-  color: #b8860b;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.45),
-    0 0 8px #ffd84d,
-    0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* Çalar saat (pusula muadili) */
-.alarm {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  color: #6b7079;
-
-  @include metallic-surface(160deg);
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
-
-  svg { width: 18px; height: 18px; }
-  &:active { transform: scale(0.92); }
-}
-
-/* Çalar saat aktif → "çalıyor" efekti */
-.alarm.alarmActive {
-  filter: none;
-  color: #ffb300;
-  box-shadow: 0 0 8px #ffb300;
-  animation: alarmRing 0.8s ease-in-out infinite;
-}
-
-@keyframes alarmRing {
-  0%, 100% { transform: rotate(0deg); }
-  25%      { transform: rotate(-12deg); }
-  75%      { transform: rotate(12deg); }
 }

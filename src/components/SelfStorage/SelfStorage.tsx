@@ -1,141 +1,33 @@
-import { useState } from 'react'
-
-import { BidIcon, UsersIcon, LocationIcon, CompassIcon, AlarmIcon } from '../icons'
 import styles from './SelfStorage.module.scss'
-import { MetalBadge } from '../MetalBadge/MetalBadge'
-import { SevenSegment } from '../SevenSegment/SevenSegment'
-import { useCountdown } from '../../hooks/useCountdown'
-
-export type StorageTier = 'bronze' | 'silver' | 'gold'
-
-export interface SelfStorageProps {
-  name: string
-  tier?: StorageTier
-  endTime: string // "01:23:45"
-  bid: number // 10000 -> "10000$"
-  participants: number
-  variant?: 'ongoing' | 'upcoming'
-  onRemind?: (active: boolean) => void
-  onJoin?: () => void
-  /** pusula aktif olduğunda tetiklenir (ileride waypoint set) */
-  onWaypoint?: (active: boolean) => void
-}
+import { AuctionControls } from '../AuctionControls/AuctionControls'
+import { NameBadge, TimerBadge, BidBadge, PartBadge } from '../AuctionStats/AuctionStats'
+import { useAuctionCard } from '../../hooks/useAuctionCard'
+import type { AuctionCardProps } from '../../lib/auctions'
 
 export const SelfStorage = ({
-  name,
-  tier = 'bronze',
-  endTime,
-  bid,
-  participants,
-  onJoin,
-  onWaypoint,
-  onRemind,
-  variant = 'ongoing'
-}: SelfStorageProps) => {
-  const [marked, setMarked] = useState(false)
-  const [compassActive, setCompassActive] = useState(false)
-  const remaining = useCountdown(endTime)
-  const [reminded, setReminded] = useState(false)
-
-  const handleReminder = () => {
-    setReminded((prev) => {
-      const next = !prev
-      onRemind?.(next)
-      return next
-    })
-  }
-
-  const handleLocation = () => {
-    setMarked((prev) => {
-      const next = !prev
-      setCompassActive(next) // marked olunca pusula aktif, unmark olunca kapanır
-      return next
-    })
-  }
-
-  const handleCompass = () => {
-    if (!marked) return
-    setCompassActive((a) => {
-      const next = !a
-      onWaypoint?.(next) // ileride: waypoint set
-      return next
-    })
-  }
+  name, tier = 'bronze', endTime, bid, participants,
+  onJoin, onWaypoint, onRemind, variant = 'ongoing',
+}: AuctionCardProps) => {
+  const c = useAuctionCard({ endTime, onWaypoint, onRemind })
 
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
-      {/* ---- METAL WALL: köşe tabelaları ---- */}
-      <MetalBadge className={styles.tlName}>{name}</MetalBadge>
+      <NameBadge name={name} className={styles.tlName} />
+      <TimerBadge value={c.remaining} className={styles.trTimer} />
+      <BidBadge bid={bid} className={styles.blBid} />
+      <PartBadge participants={participants} className={styles.brPart} />
 
-      <MetalBadge className={styles.trTimer}>
-        <SevenSegment value={remaining} color="#ff5252" size={16} />
-      </MetalBadge>
-
-      <MetalBadge className={styles.blBid} icon={<BidIcon />}>
-        <SevenSegment value={`${bid}$`} color="#5fe06f" size={15} />
-      </MetalBadge>
-
-      <MetalBadge className={styles.brPart} icon={<UsersIcon />}>
-        {participants}
-      </MetalBadge>
-
-      {/* ---- METAL DOOR: butonlar ---- */}
       <div className={styles.door}>
-        <div className={styles.locationRow}>
-          <button
-            type="button"
-            onClick={handleLocation}
-            className={[styles.locBtn, marked && styles.locActive].filter(Boolean).join(' ')}
-          >
-            <span className={styles.btnIcon}>
-              <LocationIcon />
-            </span>
-            Location
-          </button>
-
-          {marked && (
-            <button
-              type="button"
-              onClick={handleCompass}
-              aria-label="Compass"
-              className={[styles.compass, compassActive && styles.compassActive]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <CompassIcon />
-            </button>
-          )}
-        </div>
-
-        {variant === 'upcoming' ? (
-          <div className={styles.reminderRow}>
-            <button
-              type="button"
-              onClick={handleReminder}
-              className={[styles.joinBtn, reminded && styles.reminderActive].filter(Boolean).join(' ')}
-            >
-              <span className={styles.btnIcon}>
-                <AlarmIcon />
-              </span>
-              Reminder
-            </button>
-
-            {reminded && (
-              <button
-                type="button"
-                aria-label="Alarm"
-                onClick={handleReminder}
-                className={[styles.alarm, styles.alarmActive].join(' ')}
-              >
-                <AlarmIcon />
-              </button>
-            )}
-          </div>
-        ) : (
-          <button type="button" className={styles.joinBtn} onClick={onJoin}>
-            Join
-          </button>
-        )}
+        <AuctionControls
+          variant={variant}
+          marked={c.marked}
+          compassActive={c.compassActive}
+          reminded={c.reminded}
+          onLocation={c.handleLocation}
+          onCompass={c.handleCompass}
+          onReminder={c.handleReminder}
+          onJoin={onJoin}
+        />
       </div>
     </div>
   )
