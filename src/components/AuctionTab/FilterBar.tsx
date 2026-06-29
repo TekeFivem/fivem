@@ -1,6 +1,7 @@
 import { RefreshIcon, CloseIcon } from '../icons'
 import { SegmentedControl } from '../SegmentedControl/SegmentedControl'
 import { SelectControl, type SelectOption } from '../SelectControl/SelectControl'
+import { SearchControl } from '../SearchControl/SearchControl'
 import {
   TIER_OPTIONS, KIND_OPTIONS, DIR_OPTIONS, BID_OPTIONS,
   PART_OPTIONS, type Tier, type AuctionKind, type Dir,
@@ -10,22 +11,24 @@ import styles from './AuctionTab.module.scss'
 
 interface FilterBarProps {
   filters: FiltersState
-  timeOptions: SelectOption[]
+  timeOptions?: SelectOption[]
   labels?: { bid?: string; part?: string }
+  searchByName?: boolean // recent: Time yerine isim araması
   onRefresh: () => void
   onClose: () => void
 }
 
-export const FilterBar = ({ filters, timeOptions, labels, onRefresh, onClose }: FilterBarProps) => {
+export const FilterBar = ({ filters, timeOptions = [], labels, searchByName, onRefresh, onClose }: FilterBarProps) => {
   const {
-    tiers, kinds, bidPreset, bidDir, timePreset, timeDir, partPreset, partDir,
+    tiers, kinds, bidPreset, bidDir, timePreset, timeDir, partPreset, partDir, nameQuery,
     toggleTier, toggleKind, setBidPreset, setBidDir,
-    setTimePreset, setTimeDir, setPartPreset, setPartDir, clearFilters,
+    setTimePreset, setTimeDir, setPartPreset, setPartDir, setNameQuery, clearFilters,
   } = filters
 
   const hasFilters =
     tiers.length > 0 || kinds.length > 0 ||
-    bidPreset !== null || timePreset !== null || partPreset !== null
+    bidPreset !== null || timePreset !== null || partPreset !== null ||
+    nameQuery.trim() !== ''
 
   return (
     <div className={styles.topBar}>
@@ -59,15 +62,27 @@ export const FilterBar = ({ filters, timeOptions, labels, onRefresh, onClose }: 
 
           <span className={styles.divider} />
 
-          <div className={styles.filterGroup}>
-            <SelectControl
-              label="Time"
-              value={timePreset === null ? '' : String(timePreset)}
-              options={timeOptions}
-              onChange={(v) => setTimePreset(v === '' ? null : Number(v))}
-            />
-            <SelectControl value={timeDir} options={DIR_OPTIONS} onChange={(v) => setTimeDir(v as Dir)} />
-          </div>
+          {/* Recent → isim araması, diğerleri → Time filtresi */}
+          {searchByName ? (
+            <div className={styles.filterGroup}>
+              <SearchControl
+                label="Winner"
+                value={nameQuery}
+                placeholder="Search"
+                onChange={setNameQuery}
+              />
+            </div>
+          ) : (
+            <div className={styles.filterGroup}>
+              <SelectControl
+                label="Time"
+                value={timePreset === null ? '' : String(timePreset)}
+                options={timeOptions}
+                onChange={(v) => setTimePreset(v === '' ? null : Number(v))}
+              />
+              <SelectControl value={timeDir} options={DIR_OPTIONS} onChange={(v) => setTimeDir(v as Dir)} />
+            </div>
+          )}
 
           <span className={styles.divider} />
 

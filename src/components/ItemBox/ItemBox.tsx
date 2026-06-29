@@ -1,20 +1,24 @@
 import styles from './ItemBox.module.scss'
 import { AuctionControls } from '../AuctionControls/AuctionControls'
-import { NameBadge, TimerBadge, BidBadge, PartBadge } from '../AuctionStats/AuctionStats'
+import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
 
 export const ItemBox = ({
   name, tier = 'bronze', endTime, bid, participants,
   onJoin, onWaypoint, onRemind, variant = 'ongoing',
+  winner, paid, onInspect,
 }: AuctionCardProps) => {
   const c = useAuctionCard({ endTime, onWaypoint, onRemind })
+  const recent = variant === 'recent'
 
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <div className={[styles.band, styles.bandTop].join(' ')}>
         <NameBadge name={name} className={styles.name} />
-        <TimerBadge value={c.remaining} className={styles.timer} />
+        {recent
+          ? <WinnerBadge winner={winner} className={styles.timer} />
+          : <TimerBadge value={c.remaining} className={styles.timer} />}
       </div>
 
       <div className={styles.body}>
@@ -33,12 +37,15 @@ export const ItemBox = ({
             onCompass={c.handleCompass}
             onReminder={c.handleReminder}
             onJoin={onJoin}
+            onInspect={onInspect}
           />
         </div>
       </div>
 
       <div className={[styles.band, styles.bandBottom].join(' ')}>
-        <BidBadge bid={bid} className={styles.bid} />
+        {recent
+          ? <PaidBadge paid={paid} bid={bid} className={styles.bid} />
+          : <BidBadge bid={bid} className={styles.bid} />}
         <PartBadge participants={participants} className={styles.part} />
       </div>
     </div>

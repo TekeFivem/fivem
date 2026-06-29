@@ -33,8 +33,23 @@ export const CloseIcon = () => (
     <path d="M18.3 5.71 12 12.01l-6.3-6.3-1.42 1.42 6.3 6.3-6.3 6.3 1.42 1.42 6.3-6.3 6.3 6.3 1.42-1.42-6.3-6.3 6.3-6.3z" />
   </svg>
 )
+
 export const AlarmIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
     <path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm1 8.59 3.3 1.9-.75 1.3L11 13V7h2v5.59zM7.88 3.39 6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM21.41 5.72l-4.6-3.86-1.28 1.53 4.59 3.85 1.29-1.52z" />
+  </svg>
+)
+
+// 🆕 recent: kazanan (kupa)
+export const TrophyIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M18 2H6v2H2v3a4 4 0 0 0 4 4 6 6 0 0 0 5 5.91V20H8v2h8v-2h-3v-3.09A6 6 0 0 0 18 11a4 4 0 0 0 4-4V4h-4V2zM4 7V6h2v3a2 2 0 0 1-2-2zm16 0a2 2 0 0 1-2 2V6h2v1z" />
+  </svg>
+)
+
+// 🆕 recent: Inspect (büyüteç)
+export const InspectIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
   </svg>
 )

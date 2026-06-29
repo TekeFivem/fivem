@@ -1,4 +1,4 @@
-import { LocationIcon, CompassIcon, AlarmIcon } from '../icons'
+import { LocationIcon, CompassIcon, AlarmIcon, InspectIcon } from '../icons'
 import type { Variant } from '../../lib/auctions'
 import styles from './AuctionControls.module.scss'
 
@@ -11,6 +11,7 @@ interface AuctionControlsProps {
   onCompass: () => void
   onReminder: () => void
   onJoin?: () => void
+  onInspect?: () => void
 }
 
 export const AuctionControls = ({
@@ -22,8 +23,10 @@ export const AuctionControls = ({
   onCompass,
   onReminder,
   onJoin,
+  onInspect,
 }: AuctionControlsProps) => (
   <>
+    {/* Üst satır: Location + (işaretliyse) pusula — HER VARIANT'TA AYNI */}
     <div className={styles.locationRow}>
       <button
         type="button"
@@ -48,7 +51,9 @@ export const AuctionControls = ({
       )}
     </div>
 
+    {/* Alt buton: variant'a göre TEK biri görünür */}
     {variant === 'upcoming' ? (
+      /* ---- UPCOMING: Reminder ---- */
       <div className={styles.reminderRow}>
         <button
           type="button"
@@ -72,7 +77,16 @@ export const AuctionControls = ({
           </button>
         )}
       </div>
+    ) : variant === 'recent' ? (
+      /* ---- RECENT: Inspect ---- */
+      <button type="button" className={styles.joinBtn} onClick={onInspect}>
+        <span className={styles.btnIcon}>
+          <InspectIcon />
+        </span>
+        Inspect
+      </button>
     ) : (
+      /* ---- ONGOING (default): Join ---- */
       <button type="button" className={styles.joinBtn} onClick={onJoin}>
         Join
       </button>

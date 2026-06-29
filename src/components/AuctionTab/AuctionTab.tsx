@@ -18,14 +18,15 @@ export interface AuctionTabProps {
   items: AuctionItem[]
   store: FiltersStore
   variant: Variant
-  timeOptions: SelectOption[]
+  timeOptions?: SelectOption[]
   timeUnitSeconds: number
   thresholdSec?: number
   labels?: { bid?: string; part?: string }
+  searchByName?: boolean         // 👈 EKLE
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels,
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
   const live = thresholdSec != null
@@ -55,6 +56,7 @@ export const AuctionTab = ({
         labels={labels}
         onRefresh={handleRefresh}
         onClose={closeTablet}
+        searchByName={searchByName}
       />
 
       <div className={styles.grid} style={{ '--cols': 3, '--rows': 2 } as CSSProperties}>
@@ -69,6 +71,9 @@ export const AuctionTab = ({
               bid={item.bid}
               participants={item.participants}
               variant={variant}
+              winner={item.winner}
+              paid={item.paid}
+              onInspect={() => console.log('inspect', item.id)}
               onJoin={() => console.log('join', item.id)}
               onRemind={(active) => console.log('remind', item.id, active)}
               onWaypoint={(active) => console.log('waypoint', item.id, active)}

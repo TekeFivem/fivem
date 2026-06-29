@@ -23,6 +23,8 @@ export const queryAuctions = (items: AuctionItem[], f: FiltersState, opts: Query
     return { ...it, remainingSec }
   })
 
+  const q = f.nameQuery.trim().toLowerCase()
+
   const filtered = withRemaining.filter((item) => {
     if (opts.thresholdSec != null && item.remainingSec <= opts.thresholdSec) return false
 
@@ -38,8 +40,12 @@ export const queryAuctions = (items: AuctionItem[], f: FiltersState, opts: Query
     const partOk =
       f.partPreset === null ||
       (f.partDir === 'gte' ? item.participants >= f.partPreset : item.participants <= f.partPreset)
+    const nameOk =
+      q === '' ||
+      (item.winner?.toLowerCase().includes(q) ?? false) ||
+      item.name.toLowerCase().includes(q)
 
-    return tierOk && kindOk && bidOk && timeOk && partOk
+    return tierOk && kindOk && bidOk && timeOk && partOk && nameOk
   })
 
   const sorted = [...filtered].sort((a, b) => a.remainingSec - b.remainingSec)

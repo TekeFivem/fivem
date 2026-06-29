@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import type { Tier, AuctionKind, Dir } from '../lib/auctions'
 
-
 export interface FiltersState {
   tiers: Tier[]
   kinds: AuctionKind[]
@@ -13,6 +12,8 @@ export interface FiltersState {
   partPreset: number | null
   partDir: Dir
 
+  nameQuery: string // recent: oyuncu ismi araması
+
   page: number
 
   toggleTier: (t: Tier) => void
@@ -23,6 +24,7 @@ export interface FiltersState {
   setTimeDir: (d: Dir) => void
   setPartPreset: (v: number | null) => void
   setPartDir: (d: Dir) => void
+  setNameQuery: (v: string) => void
   clearFilters: () => void
   nextPage: (totalPages: number) => void
   prevPage: () => void
@@ -38,6 +40,7 @@ const createFiltersStore = () =>
     timeDir: 'gte',
     partPreset: null,
     partDir: 'gte',
+    nameQuery: '',
     page: 0,
 
     toggleTier: (t) =>
@@ -57,6 +60,7 @@ const createFiltersStore = () =>
     setTimeDir: (d) => set({ timeDir: d, page: 0 }),
     setPartPreset: (v) => set({ partPreset: v, page: 0 }),
     setPartDir: (d) => set({ partDir: d, page: 0 }),
+    setNameQuery: (v) => set({ nameQuery: v, page: 0 }),
 
     clearFilters: () =>
       set({
@@ -68,6 +72,7 @@ const createFiltersStore = () =>
         timeDir: 'gte',
         partPreset: null,
         partDir: 'gte',
+        nameQuery: '',
         page: 0,
       }),
 
@@ -77,5 +82,6 @@ const createFiltersStore = () =>
 
 export const useOngoingFiltersStore = createFiltersStore()
 export const useUpcomingFiltersStore = createFiltersStore()
+export const useRecentFiltersStore = createFiltersStore()
 
 export type FiltersStore = typeof useOngoingFiltersStore
