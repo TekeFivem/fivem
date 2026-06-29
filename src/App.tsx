@@ -1,14 +1,10 @@
-import { useState } from 'react'
-
-import './App.css'
+import { Tablet } from './components/Tablet/Tablet'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-
-    </>
+    <Tablet>
+      {/* Buraya kendi ekran içeriğini / uygulamalarını koyacaksın */}
+    </Tablet>
   )
 }
 

@@ -1,0 +1,85 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.wrapper {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; // sadece tablet tıklamayı yakalasın (FiveM için ideal)
+}
+
+.tablet {
+  position: relative;
+  width: $tablet-width;
+  height: $tablet-height;
+  padding: $bezel;
+  border-radius: $radius;
+  pointer-events: auto;
+
+  @include metallic-surface();
+
+  // metalik derinlik: iç highlight + iç gölge + dış drop shadow
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.45),
+    0 25px 55px rgba(0, 0, 0, 0.55),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+
+  // üstte parlama (sheen)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0) 32%,
+      rgba(255, 255, 255, 0) 68%,
+      rgba(255, 255, 255, 0.18) 100%
+    );
+    pointer-events: none;
+  }
+
+  // fırça dokusu
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    @include brushed-overlay;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: $screen-bg;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.7),
+    inset 0 0 18px rgba(0, 0, 0, 0.8);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #c7ccd6;
+  font-family: system-ui, sans-serif;
+
+  span { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+  small { font-size: 13px; opacity: 0.5; }
+}
+
