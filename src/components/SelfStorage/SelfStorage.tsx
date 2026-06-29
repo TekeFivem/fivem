@@ -4,6 +4,7 @@ import { BidIcon, UsersIcon, LocationIcon, CompassIcon } from '../icons'
 import styles from './SelfStorage.module.scss'
 import { MetalBadge } from '../MetalBadge/MetalBadge'
 import { SevenSegment } from '../SevenSegment/SevenSegment'
+import { useCountdown } from '../../hooks/useCountdown'
 
 export type StorageTier = 'bronze' | 'silver' | 'gold'
 
@@ -29,6 +30,7 @@ export const SelfStorage = ({
 }: SelfStorageProps) => {
   const [marked, setMarked] = useState(false)
   const [compassActive, setCompassActive] = useState(false)
+  const remaining = useCountdown(endTime)
 
   const handleLocation = () => {
     setMarked((prev) => {
@@ -53,7 +55,7 @@ export const SelfStorage = ({
       <MetalBadge className={styles.tlName}>{name}</MetalBadge>
 
       <MetalBadge className={styles.trTimer}>
-        <SevenSegment value={endTime} color="#ff5252" size={16} />
+        <SevenSegment value={remaining} color="#ff5252" size={16} />
       </MetalBadge>
 
       <MetalBadge className={styles.blBid} icon={<BidIcon />}>

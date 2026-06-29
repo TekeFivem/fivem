@@ -4,6 +4,7 @@ import { BidIcon, UsersIcon, LocationIcon, CompassIcon } from '../icons'
 import styles from './ItemBox.module.scss'
 import { MetalBadge } from '../MetalBadge/MetalBadge'
 import { SevenSegment } from '../SevenSegment/SevenSegment'
+import { useCountdown } from '../../hooks/useCountdown'
 
 export type ItemBoxTier = 'bronze' | 'silver' | 'gold'
 
@@ -28,7 +29,7 @@ export const ItemBox = ({
 }: ItemBoxProps) => {
   const [marked, setMarked] = useState(false)
   const [compassActive, setCompassActive] = useState(false)
-
+  const remaining = useCountdown(endTime)  
   const handleLocation = () => {
     setMarked((prev) => {
       const next = !prev
@@ -52,7 +53,7 @@ export const ItemBox = ({
       <div className={[styles.band, styles.bandTop].join(' ')}>
         <MetalBadge className={styles.name}>{name}</MetalBadge>
         <MetalBadge className={styles.timer}>
-          <SevenSegment value={endTime} color="#ff5252" size={16} />
+          <SevenSegment value={remaining} color="#ff5252" size={16} />
         </MetalBadge>
       </div>
 

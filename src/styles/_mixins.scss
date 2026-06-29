@@ -5,10 +5,9 @@
     background:
         linear-gradient($angle,
             $metal-light 0%,
-            $metal-mid 18%,
-            $metal-dark 50%,
-            $metal-mid 82%,
-            $metal-light 100%);
+            $metal-mid 0%,
+            $metal-dark 100%,
+            $metal-light 60%);
 }
 
 // İnce fırça dokusu (brushed metal)
