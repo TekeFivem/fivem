@@ -1,0 +1,254 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+/* ---- Tier renkleri ---- */
+.bronze {
+  --tier-base: #{$bronze-base};
+  --tier-light: #{$bronze-light};
+  --tier-dark: #{$bronze-dark};
+}
+.silver {
+  --tier-base: #{$silver-base};
+  --tier-light: #{$silver-light};
+  --tier-dark: #{$silver-dark};
+}
+.gold {
+  --tier-base: #{$gold-base};
+  --tier-light: #{$gold-light};
+  --tier-dark: #{$gold-dark};
+}
+
+/* ---- Sandık gövdesi: kalın takviye çerçeve ---- */
+.unit {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(155deg, var(--tier-base), var(--tier-dark));
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.5),        // dış koyu kenar
+    inset 0 0 0 5px rgba(255, 255, 255, 0.14), // iç highlight
+    inset 0 3px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -5px 9px rgba(0, 0, 0, 0.5),
+    0 8px 16px rgba(0, 0, 0, 0.55);
+}
+
+/* ---- Üst / alt takviye bantları (perçinli) ---- */
+.band {
+  position: relative;
+  height: 23%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 2;
+
+  background: linear-gradient(180deg, var(--tier-light) 0%, var(--tier-base) 60%, var(--tier-dark) 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.45);
+
+  // perçin sırası
+  &::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    height: 4px;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.55) 0 1.5px, transparent 2px);
+    background-size: 20px 4px;
+    background-repeat: repeat-x;
+    opacity: 0.7;
+  }
+}
+.bandTop {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.55);
+  &::after { top: 5px; }
+}
+.bandBottom {
+  border-top: 2px solid rgba(0, 0, 0, 0.55);
+  &::after { bottom: 5px; }
+}
+
+/* ---- Gövde (içeri gömük panel) ---- */
+.body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    // dikey fırçalı çelik
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.20) 0px,
+      rgba(0, 0, 0, 0.20) 1px,
+      rgba(255, 255, 255, 0.06) 2px,
+      transparent 3px,
+      transparent 11px
+    ),
+    linear-gradient(155deg, var(--tier-base), var(--tier-dark));
+
+  // gömük derinlik
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.4),
+    inset 0 7px 14px rgba(0, 0, 0, 0.5),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* kapak dikişi */
+.seam {
+  position: absolute;
+  top: 28%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18);
+  z-index: 1;
+}
+
+/* toggle mandalları (dikişi geçer) */
+.latch {
+  position: absolute;
+  top: calc(28% - 13px);
+  width: 30px;
+  height: 28px;
+  border-radius: 3px;
+  z-index: 3;
+  background: linear-gradient(180deg, var(--tier-light), var(--tier-dark));
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.65), inset 0 0 2px rgba(255, 255, 255, 0.5);
+
+  // lever
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #d7dbe2, #6c717b);
+    box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.6), 0 1px 1px rgba(0, 0, 0, 0.4);
+  }
+}
+.latchL { left: 13%; }
+.latchR { right: 13%; }
+
+/* merkez asma kilit haspı */
+.hasp {
+  position: absolute;
+  top: calc(28% - 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 32px;
+  border-radius: 4px;
+  z-index: 3;
+  background: linear-gradient(180deg, var(--tier-light), var(--tier-dark));
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.65), inset 0 0 2px rgba(255, 255, 255, 0.5);
+
+  // kilit halkası (shackle)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border: 3px solid rgba(35, 35, 38, 0.85);
+    border-radius: 50%;
+    background: transparent;
+  }
+}
+
+/* badge konum sınıfları (band içinde flex ile zaten yerleşiyor) */
+.name, .timer, .bid, .part { z-index: 2; }
+
+/* ---- Kontroller ---- */
+.controls {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18%; // dikiş/mandalların altına gelsin
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.locBtn,
+.joinBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1c1f25;
+
+  @include metallic-surface(160deg);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.08s ease, box-shadow 0.15s ease, color 0.15s ease;
+
+  &:active { transform: scale(0.97); }
+}
+
+.btnIcon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.locActive {
+  color: #b8860b;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    0 0 8px #ffd84d,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.compass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #6b7079;
+
+  @include metallic-surface(160deg);
+  filter: grayscale(1);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease, color 0.15s ease;
+
+  svg { width: 18px; height: 18px; }
+  &:active { transform: scale(0.92); }
+}
+
+.compassActive {
+  filter: none;
+  color: #ff5252;
+  box-shadow: 0 0 8px #ff5252;
+}
