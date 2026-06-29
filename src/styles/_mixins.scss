@@ -2,24 +2,67 @@
 
 // Metalik fırçalanmış yüzey
 @mixin metallic-surface($angle: 145deg) {
-  background:
-    linear-gradient(
-      $angle,
-      $metal-light 0%,
-      $metal-mid 18%,
-      $metal-dark 50%,
-      $metal-mid 82%,
-      $metal-light 100%
-    );
+    background:
+        linear-gradient($angle,
+            $metal-light 0%,
+            $metal-mid 18%,
+            $metal-dark 50%,
+            $metal-mid 82%,
+            $metal-light 100%);
 }
 
 // İnce fırça dokusu (brushed metal)
 @mixin brushed-overlay {
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0px,
-    rgba(255, 255, 255, 0.05) 1px,
-    rgba(0, 0, 0, 0.04) 2px,
-    rgba(0, 0, 0, 0.04) 3px
-  );
+    background-image: repeating-linear-gradient(90deg,
+            rgba(255, 255, 255, 0.05) 0px,
+            rgba(255, 255, 255, 0.05) 1px,
+            rgba(0, 0, 0, 0.04) 2px,
+            rgba(0, 0, 0, 0.04) 3px);
+}
+
+@mixin metal-plate {
+    background: repeating-linear-gradient(90deg,
+        var(--plate-shadow, #{$plate-shadow}) 0px, // \ düşen kenar
+        var(--plate-base, #{$plate-base}) var(--plate-fall, 7px),
+        var(--plate-base, #{$plate-base}) calc(var(--plate-fall, 7px) + var(--plate-valley, 26px)), // ___ oluk
+        var(--plate-face, #{$plate-face}) calc(var(--plate-fall, 7px) + var(--plate-valley, 26px) + var(--plate-rise, 7px)), // / highlight
+        var(--plate-crest, #{$plate-crest}) calc(var(--plate-fall, 7px) + var(--plate-valley, 26px) + var(--plate-rise, 7px)), // ¯¯¯ sırt
+        var(--plate-crest, #{$plate-crest}) calc(var(--plate-fall, 7px) + var(--plate-valley, 26px) + var(--plate-rise, 7px) + var(--plate-crest-size, 22px)));
+    background-position: var(--plate-x, 0px) var(--plate-y, 0px);
+}
+
+// Yatay derz çizgileri — SADECE oluk (valley) kolonlarında görünür
+@mixin metal-plate-seams {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+
+    // yatay çizgiler
+    background: repeating-linear-gradient(0deg,
+            var(--plate-seam-color, rgba(0, 0, 0, 0.22)) 0px,
+            var(--plate-seam-color, rgba(0, 0, 0, 0.22)) 2px,
+            transparent 2px,
+            transparent var(--plate-seam, 120px));
+    background-position: 0 var(--plate-y, 0px);
+
+    // oluk genişliği = fall + valley ; tam periyot = fall+valley+rise+crest
+    --_seam-show: calc(var(--plate-fall, 7px) + var(--plate-valley, 26px));
+    --_seam-period: calc(var(--plate-fall, 7px) + var(--plate-valley, 26px) + var(--plate-rise, 7px) + var(--plate-crest-size, 22px));
+
+    // mask: siyah = göster (oluk), şeffaf = gizle (sırt/highlight)
+    -webkit-mask-image: repeating-linear-gradient(90deg,
+            #000 0px,
+            #000 var(--_seam-show),
+            transparent var(--_seam-show),
+            transparent var(--_seam-period));
+    mask-image: repeating-linear-gradient(90deg,
+            #000 0px,
+            #000 var(--_seam-show),
+            transparent var(--_seam-show),
+            transparent var(--_seam-period));
+    // korrugasyonla aynı hizada kayması için
+    -webkit-mask-position: var(--plate-x, 0px) 0;
+    mask-position: var(--plate-x, 0px) 0;
 }

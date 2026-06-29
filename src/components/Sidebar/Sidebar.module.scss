@@ -1,0 +1,52 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.sidebar {
+  position: relative;
+  width: 200px;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  /* 🔧 BOYUTLAR */
+  --plate-fall:        1px;
+  --plate-valley:      10px;
+  --plate-rise:        9px;
+  --plate-crest-size:  12px;
+  --plate-x:           0px;
+  --plate-y:           0px;
+  --plate-seam:        40px;
+
+  /* 🎨 RENKLER */
+  --plate-shadow:     #8f95a0;
+  --plate-base:       #b4bac4;
+  --plate-face:       #ebf0f8;
+  --plate-crest:      #e1e4e9;
+  --plate-seam-color: rgba(0, 0, 0, 0.22);
+
+  @include metal-plate;
+  box-shadow: inset -6px 0 12px rgba(0, 0, 0, 0.25);
+
+  // derz çizgileri (maskeli) ayrı katmanda
+  &::before {
+    @include metal-plate-seams;
+  }
+}
+
+// içerik derzin üstünde kalsın (çizgiler yazının üstüne binmesin)
+.header,
+.nav {
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  padding: 18px 9px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 14px;
+}
