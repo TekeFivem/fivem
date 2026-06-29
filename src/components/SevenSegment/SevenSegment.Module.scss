@@ -1,0 +1,77 @@
+.display {
+  --seg-h: var(--seg-size, 18px);
+  --seg-w: calc(var(--seg-size, 18px) * 0.6);
+  --seg-t: calc(var(--seg-size, 18px) * 0.14);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--seg-size, 18px) * 0.18);
+  color: var(--seg-color, #ff4d4d);
+}
+
+.digit {
+  position: relative;
+  width: var(--seg-w);
+  height: var(--seg-h);
+}
+
+.seg {
+  position: absolute;
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+}
+.off {
+  opacity: 0.1;
+  box-shadow: none;
+}
+
+/* yatay segmentler: a (üst), g (orta), d (alt) */
+.a,
+.g,
+.d {
+  left: calc(var(--seg-t) * 0.6);
+  width: calc(var(--seg-w) - var(--seg-t) * 1.2);
+  height: var(--seg-t);
+  clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+}
+.a { top: 0; }
+.g { top: calc(50% - var(--seg-t) / 2); }
+.d { bottom: 0; }
+
+/* dikey segmentler: f/b üst, e/c alt */
+.f,
+.b,
+.e,
+.c {
+  width: var(--seg-t);
+  height: calc(50% - var(--seg-t) * 0.8);
+  clip-path: polygon(0 12%, 50% 0, 100% 12%, 100% 88%, 50% 100%, 0 88%);
+}
+.f { top: calc(var(--seg-t) * 0.6); left: 0; }
+.b { top: calc(var(--seg-t) * 0.6); right: 0; }
+.e { bottom: calc(var(--seg-t) * 0.6); left: 0; }
+.c { bottom: calc(var(--seg-t) * 0.6); right: 0; }
+
+.colon {
+  position: relative;
+  width: var(--seg-t);
+  height: var(--seg-h);
+}
+.colon span {
+  position: absolute;
+  left: 0;
+  width: var(--seg-t);
+  height: var(--seg-t);
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+}
+.colon span:first-child { top: 28%; }
+.colon span:last-child { top: 60%; }
+
+.symbol {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: calc(var(--seg-h) * 0.95);
+  line-height: var(--seg-h);
+  text-shadow: 0 0 4px currentColor;
+}

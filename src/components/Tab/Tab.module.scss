@@ -1,0 +1,78 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.tab {
+  display: block;
+  width: 100%;
+  padding: 4px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  position: relative;
+
+  // Auctions tabelasıyla aynı metal yüzey (küçük versiyon)
+  @include metallic-surface(160deg);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 2px 5px rgba(0, 0, 0, 0.4);
+
+  // 🔘 İNAKTİF → grayscale
+  filter: grayscale(1) brightness(0.9);
+  transition: filter 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    filter: grayscale(0.45) brightness(1.02);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ✅ AKTİF → kendi rengi (grayscale kalkar) + accent glow
+.active {
+  filter: none;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    0 0 8px var(--tab-accent),
+    0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+// hazard şerit çerçeve (Auctions ile aynı, daha ince)
+.stripes {
+  display: block;
+  border-radius: 3px;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    45deg,
+    $hazard-yellow 0px,
+    $hazard-yellow 8px,
+    $hazard-black 8px,
+    $hazard-black 16px
+  );
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+// ortadaki opak plaka — kenarlık tab'ın kendi rengi
+.plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--tab-frame, 5px); // şerit çerçeve kalınlığı
+  height: 28px;
+  border-radius: 2px;
+  border: 2px solid var(--tab-accent);
+  background: #16181d; // SOLID
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.label {
+  font-family: 'NoctrdripSolidmelt', sans-serif; // Auctions ile aynı font
+  font-size: 13px;          // Auctions 20px → tab daha küçük
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--tab-accent);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+}
