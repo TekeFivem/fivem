@@ -1,4 +1,4 @@
-import { LocationIcon, CompassIcon, AlarmIcon, InspectIcon } from '../icons'
+import { LocationIcon, CompassIcon, AlarmIcon, InspectIcon, BidIcon } from '../icons'
 import type { Variant } from '../../lib/auctions'
 import styles from './AuctionControls.module.scss'
 
@@ -7,11 +7,13 @@ interface AuctionControlsProps {
   marked: boolean
   compassActive: boolean
   reminded: boolean
+  result?: 'won' | 'lost'
   onLocation: () => void
   onCompass: () => void
   onReminder: () => void
   onJoin?: () => void
   onInspect?: () => void
+  onBid?: () => void
 }
 
 export const AuctionControls = ({
@@ -19,11 +21,13 @@ export const AuctionControls = ({
   marked,
   compassActive,
   reminded,
+  result,
   onLocation,
   onCompass,
   onReminder,
   onJoin,
   onInspect,
+  onBid,
 }: AuctionControlsProps) => (
   <>
     {/* Üst satır: Location + (işaretliyse) pusula — HER VARIANT'TA AYNI */}
@@ -51,7 +55,7 @@ export const AuctionControls = ({
       )}
     </div>
 
-    {/* Alt buton: variant'a göre TEK biri görünür */}
+    {/* Alt buton: variant + sonuç durumuna göre TEK biri görünür */}
     {variant === 'upcoming' ? (
       /* ---- UPCOMING: Reminder ---- */
       <div className={styles.reminderRow}>
@@ -77,13 +81,21 @@ export const AuctionControls = ({
           </button>
         )}
       </div>
-    ) : variant === 'recent' ? (
-      /* ---- RECENT: Inspect ---- */
+    ) : variant === 'recent' || (variant === 'joined' && result) ? (
+      /* ---- RECENT & JOINED(sonuçlu): Inspect ---- */
       <button type="button" className={styles.joinBtn} onClick={onInspect}>
         <span className={styles.btnIcon}>
           <InspectIcon />
         </span>
         Inspect
+      </button>
+    ) : variant === 'joined' ? (
+      /* ---- JOINED(sonuçsuz): Bid ---- */
+      <button type="button" className={styles.joinBtn} onClick={onBid}>
+        <span className={styles.btnIcon}>
+          <BidIcon />
+        </span>
+        Bid
       </button>
     ) : (
       /* ---- ONGOING (default): Join ---- */

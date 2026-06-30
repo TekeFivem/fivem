@@ -4,7 +4,7 @@ import type { SelectOption } from '../components/SelectControl/SelectControl'
 export type Tier = 'bronze' | 'silver' | 'gold'
 export type AuctionKind = 'storage' | 'container' | 'itembox'
 export type Dir = 'gte' | 'lte' // artan = gte (≥), azalan = lte (≤)
-export type Variant = 'ongoing' | 'upcoming' | 'recent'
+export type Variant = 'ongoing' | 'upcoming' | 'recent' | 'joined'
 
 export interface AuctionItem {
   kind: AuctionKind
@@ -14,10 +14,11 @@ export interface AuctionItem {
   endTime: string // "hh:mm:ss"
   bid: number
   participants: number
-  winner?: string // recent: kazanan kişi
-  paid?: number   // recent: ödenen para
+  winner?: string // recent/joined(sonuçlu): kazanan
+  paid?: number   // recent/joined(sonuçlu): ödenen para
+  result?: 'won' | 'lost' // joined: sonuç → recent görünüm + VICTORY/DEFEAT
+  decidedAt?: number // joined: sonucun belli olduğu an (sıralama için)
 }
-
 export interface AuctionCardProps {
   name: string
   tier?: Tier
@@ -25,11 +26,13 @@ export interface AuctionCardProps {
   bid: number
   participants: number
   variant?: Variant
-  winner?: string // recent: kazanan
-  paid?: number   // recent: ödenen para
+  winner?: string // recent/joined(sonuçlu): kazanan
+  paid?: number   // recent/joined(sonuçlu): ödenen para
+  result?: 'won' | 'lost' // joined: sonuç → recent görünüm + VICTORY/DEFEAT
   onRemind?: (active: boolean) => void
   onJoin?: () => void
-  onInspect?: () => void // recent: Inspect butonu
+  onInspect?: () => void // recent / joined(sonuçlu)
+  onBid?: () => void      // joined(sonuçsuz): Bid butonu
   /** pusula aktif olunca tetiklenir (ileride waypoint set) */
   onWaypoint?: (active: boolean) => void
 }
@@ -101,11 +104,3 @@ export const UPCOMING_TIME_OPTIONS: SelectOption[] = [
   { value: '10', label: '10 saat' },
 ]
 
-// Recent: saat bazlı ("X saat önce bitti")
-export const RECENT_TIME_OPTIONS: SelectOption[] = [
-  { value: '', label: 'All' },
-  { value: '2', label: '2 saat' },
-  { value: '6', label: '6 saat' },
-  { value: '12', label: '12 saat' },
-  { value: '24', label: '24 saat' },
-]

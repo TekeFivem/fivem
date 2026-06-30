@@ -7,10 +7,10 @@ import type { AuctionCardProps } from '../../lib/auctions'
 export const Container = ({
   name, tier = 'bronze', endTime, bid, participants,
   onJoin, onWaypoint, onRemind, variant = 'ongoing',
-  winner, paid, onInspect,
+  winner, paid, result, onInspect, onBid,
 }: AuctionCardProps) => {
   const c = useAuctionCard({ endTime, onWaypoint, onRemind })
-  const recent = variant === 'recent'
+  const recent = variant === 'recent' || (variant === 'joined' && !!result)
 
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
@@ -42,11 +42,13 @@ export const Container = ({
             marked={c.marked}
             compassActive={c.compassActive}
             reminded={c.reminded}
+            result={result}
             onLocation={c.handleLocation}
             onCompass={c.handleCompass}
             onReminder={c.handleReminder}
             onJoin={onJoin}
             onInspect={onInspect}
+            onBid={onBid}
           />
         </div>
       </div>

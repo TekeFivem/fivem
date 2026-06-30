@@ -1,5 +1,6 @@
 import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
 import { useOngoingFiltersStore } from '../../store/createFiltersStore'
+import { useJoinedStore } from '../../store/joinedStore'
 import { ONGOING_TIME_OPTIONS, type AuctionItem } from '../../lib/auctions'
 
 const MOCK: AuctionItem[] = [
@@ -17,12 +18,18 @@ const MOCK: AuctionItem[] = [
   { kind: 'itembox', id: 'i4', name: 'TMB-Y', tier: 'bronze', endTime: '00:03:40', bid: 750, participants: 1 },
 ]
 
-export const OngoingTab = () => (
-  <AuctionTab
-    items={MOCK}
-    store={useOngoingFiltersStore}
-    variant="ongoing"
-    timeOptions={ONGOING_TIME_OPTIONS}
-    timeUnitSeconds={60}
-  />
-)
+export const OngoingTab = () => {
+  const joined = useJoinedStore((s) => s.items)
+  const joinedIds = new Set(joined.map((j) => j.id))
+  const items = MOCK.filter((m) => !joinedIds.has(m.id))
+
+  return (
+    <AuctionTab
+      items={items}
+      store={useOngoingFiltersStore}
+      variant="ongoing"
+      timeOptions={ONGOING_TIME_OPTIONS}
+      timeUnitSeconds={60}
+    />
+  )
+}

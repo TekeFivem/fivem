@@ -5,6 +5,7 @@ import { Container } from '../Container/Container'
 import { ItemBox } from '../ItemBox/ItemBox'
 import { FilterBar } from './FilterBar'
 import { useTabletStore } from '../../store/tabletStore'
+import { useJoinedStore } from '../../store/joinedStore'
 import { useNow } from '../../hooks/useNow'
 import { queryAuctions } from '../../hooks/useAuctionQuery'
 import type { AuctionItem, Variant } from '../../lib/auctions'
@@ -22,7 +23,7 @@ export interface AuctionTabProps {
   timeUnitSeconds: number
   thresholdSec?: number
   labels?: { bid?: string; part?: string }
-  searchByName?: boolean         // 👈 EKLE
+  searchByName?: boolean
 }
 
 export const AuctionTab = ({
@@ -32,6 +33,7 @@ export const AuctionTab = ({
   const live = thresholdSec != null
   const now = useNow(live)
   const closeTablet = useTabletStore((s) => s.close)
+  const join = useJoinedStore((s) => s.join)
   const filters = store()
   const deadlines = useRef<Map<string, number>>(new Map())
 
@@ -46,6 +48,7 @@ export const AuctionTab = ({
     thresholdSec,
     now,
     deadlines: deadlines.current,
+    groupDecidedLast: variant === 'joined'
   })
 
   return (
@@ -63,21 +66,35 @@ export const AuctionTab = ({
         {pageItems.map((item) => {
           const Card = CARD[item.kind]
           return (
-            <Card
-              key={item.id}
-              name={item.name}
-              tier={item.tier}
-              endTime={item.endTime}
-              bid={item.bid}
-              participants={item.participants}
-              variant={variant}
-              winner={item.winner}
-              paid={item.paid}
-              onInspect={() => console.log('inspect', item.id)}
-              onJoin={() => console.log('join', item.id)}
-              onRemind={(active) => console.log('remind', item.id, active)}
-              onWaypoint={(active) => console.log('waypoint', item.id, active)}
-            />
+            <div key={item.id} className={styles.cardWrap}>
+              <Card
+                name={item.name}
+                tier={item.tier}
+                endTime={item.endTime}
+                bid={item.bid}
+                participants={item.participants}
+                variant={variant}
+                winner={item.winner}
+                paid={item.paid}
+                result={item.result}
+                onInspect={() => console.log('inspect', item.id)}
+                onJoin={() => join(item)}
+                onBid={() => console.log('bid', item.id)}
+                onRemind={(active) => console.log('remind', item.id, active)}
+                onWaypoint={(active) => console.log('waypoint', item.id, active)}
+              />
+
+              {/* JOINED: sonuç maskesi */}
+              {variant === 'joined' && item.result && (
+                <div
+                  className={[styles.mask, item.result === 'won' ? styles.victory : styles.defeat].join(' ')}
+                >
+                  <span className={styles.maskText}>
+                    {item.result === 'won' ? 'VICTORY' : 'DEFEAT'}
+                  </span>
+                </div>
+              )}
+            </div>
           )
         })}
 

@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { Tier, AuctionKind, Dir } from '../lib/auctions'
 
+export type SortKey = 'bid' | 'time' | 'part' | null
+
 export interface FiltersState {
   tiers: Tier[]
   kinds: AuctionKind[]
@@ -13,6 +15,10 @@ export interface FiltersState {
   partDir: Dir
 
   nameQuery: string // recent: oyuncu ismi araması
+
+  // aktif sıralama: en son dokunulan sütun + yönü
+  sortKey: SortKey
+  sortDir: 'asc' | 'desc'
 
   page: number
 
@@ -30,6 +36,9 @@ export interface FiltersState {
   prevPage: () => void
 }
 
+// Dir → sıralama yönü: Inc (gte) = artan, Dec (lte) = azalan
+const dirToSort = (d: Dir): 'asc' | 'desc' => (d === 'gte' ? 'asc' : 'desc')
+
 const createFiltersStore = () =>
   create<FiltersState>((set) => ({
     tiers: [],
@@ -41,6 +50,10 @@ const createFiltersStore = () =>
     partPreset: null,
     partDir: 'gte',
     nameQuery: '',
+
+    sortKey: null, // varsayılan: süreye göre artan (queryAuctions'ta)
+    sortDir: 'asc',
+
     page: 0,
 
     toggleTier: (t) =>
@@ -55,11 +68,14 @@ const createFiltersStore = () =>
       })),
 
     setBidPreset: (v) => set({ bidPreset: v, page: 0 }),
-    setBidDir: (d) => set({ bidDir: d, page: 0 }),
     setTimePreset: (v) => set({ timePreset: v, page: 0 }),
-    setTimeDir: (d) => set({ timeDir: d, page: 0 }),
     setPartPreset: (v) => set({ partPreset: v, page: 0 }),
-    setPartDir: (d) => set({ partDir: d, page: 0 }),
+
+    // yön değişince o sütun aktif sıralama olur
+    setBidDir: (d) => set({ bidDir: d, sortKey: 'bid', sortDir: dirToSort(d), page: 0 }),
+    setTimeDir: (d) => set({ timeDir: d, sortKey: 'time', sortDir: dirToSort(d), page: 0 }),
+    setPartDir: (d) => set({ partDir: d, sortKey: 'part', sortDir: dirToSort(d), page: 0 }),
+
     setNameQuery: (v) => set({ nameQuery: v, page: 0 }),
 
     clearFilters: () =>
@@ -73,6 +89,8 @@ const createFiltersStore = () =>
         partPreset: null,
         partDir: 'gte',
         nameQuery: '',
+        sortKey: null,
+        sortDir: 'asc',
         page: 0,
       }),
 
@@ -83,5 +101,6 @@ const createFiltersStore = () =>
 export const useOngoingFiltersStore = createFiltersStore()
 export const useUpcomingFiltersStore = createFiltersStore()
 export const useRecentFiltersStore = createFiltersStore()
+export const useJoinedFiltersStore = createFiltersStore()
 
 export type FiltersStore = typeof useOngoingFiltersStore

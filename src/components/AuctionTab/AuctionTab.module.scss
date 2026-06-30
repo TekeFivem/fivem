@@ -87,7 +87,7 @@
   font-family: 'NoctrdripSolidmelt', sans-serif;
   font-size: 13px;
   text-transform: uppercase;
-  color: #fff;                       // yazı beyaz (kırmızı zeminde okunur)
+  color: #fff; // yazı beyaz (kırmızı zeminde okunur)
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 
   // kırmızı metal gradyan
@@ -105,7 +105,10 @@
       0 2px 4px rgba(0, 0, 0, 0.45),
       0 0 10px rgba(220, 50, 50, 0.6);
   }
-  &:active { transform: translateX(1px); }
+
+  &:active {
+    transform: translateX(1px);
+  }
 }
 
 .clearBtn span {
@@ -120,7 +123,7 @@
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  flex-direction: column;   // dikey diziliş
+  flex-direction: column; // dikey diziliş
   align-items: center;
   gap: 8px;
 }
@@ -143,8 +146,13 @@
     0 2px 4px rgba(0, 0, 0, 0.45);
   transition: filter 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 
-  &:hover { filter: brightness(1.06); }
-  &:active { transform: translateY(1px); }
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
 
 .closeBtn {
@@ -193,8 +201,14 @@
     0 2px 4px rgba(0, 0, 0, 0.4);
   transition: filter 0.15s ease, transform 0.08s ease;
 
-  &:hover:not(:disabled) { filter: brightness(1.05); }
-  &:active:not(:disabled) { transform: translateY(1px); }
+  &:hover:not(:disabled) {
+    filter: brightness(1.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
   &:disabled {
     cursor: default;
     opacity: 0.4;
@@ -222,4 +236,63 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   opacity: 0.6;
+}
+
+/* kart + maske sarmalı */
+.cardWrap {
+  position: relative;
+  display: grid;
+  /* kart hücreyi eskisi gibi doldurur */
+  min-height: 0;
+}
+
+
+/* JOINED sonuç maskesi — kartı kaplar, çapraz yazı, butonları kilitler */
+.mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 5;
+
+  /* butonları deaktif eder: tüm tıklamaları maske yakalar */
+  pointer-events: all;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.maskText {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: clamp(28px, 6vw, 52px);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-18deg);
+  /* çapraz */
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+}
+
+.victory {
+  background: rgba(8, 38, 16, 0.62);
+  box-shadow:
+    inset 0 0 0 3px rgba(70, 224, 107, 0.8),
+    inset 0 0 60px rgba(70, 224, 107, 0.45);
+}
+
+.victory .maskText {
+  color: #5dff8a;
+}
+
+.defeat {
+  background: rgba(45, 10, 10, 0.62);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 82, 82, 0.8),
+    inset 0 0 60px rgba(255, 82, 82, 0.45);
+}
+
+.defeat .maskText {
+  color: #ff6b6b;
 }
