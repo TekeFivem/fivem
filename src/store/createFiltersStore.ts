@@ -102,5 +102,6 @@ export const useOngoingFiltersStore = createFiltersStore()
 export const useUpcomingFiltersStore = createFiltersStore()
 export const useRecentFiltersStore = createFiltersStore()
 export const useJoinedFiltersStore = createFiltersStore()
+export const useVaultFiltersStore = createFiltersStore()
 
 export type FiltersStore = typeof useOngoingFiltersStore

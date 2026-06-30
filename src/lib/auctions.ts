@@ -4,8 +4,8 @@ import type { SelectOption } from '../components/SelectControl/SelectControl'
 export type Tier = 'bronze' | 'silver' | 'gold'
 export type AuctionKind = 'storage' | 'container' | 'itembox'
 export type Dir = 'gte' | 'lte' // artan = gte (≥), azalan = lte (≤)
-export type Variant = 'ongoing' | 'upcoming' | 'recent' | 'joined'
-
+export type Variant = 'ongoing' | 'upcoming' | 'recent' | 'joined' | 'vault'
+export type VaultSecurity = 'none' | 'insured' | 'secured'
 export interface AuctionItem {
   kind: AuctionKind
   id: string
@@ -18,6 +18,8 @@ export interface AuctionItem {
   paid?: number   // recent/joined(sonuçlu): ödenen para
   result?: 'won' | 'lost' // joined: sonuç → recent görünüm + VICTORY/DEFEAT
   decidedAt?: number // joined: sonucun belli olduğu an (sıralama için)
+  estValue?: number       // vault: tahmini değer (alt-sol)
+  security?: VaultSecurity // vault: güvenlik durumu (alt-sağ)
 }
 export interface AuctionCardProps {
   name: string
@@ -35,6 +37,9 @@ export interface AuctionCardProps {
   onBid?: () => void      // joined(sonuçsuz): Bid butonu
   /** pusula aktif olunca tetiklenir (ileride waypoint set) */
   onWaypoint?: (active: boolean) => void
+  estValue?: number
+  security?: VaultSecurity
+  onAction?: () => void // vault: Action butonu (modal açacak)
 }
 
 // "hh:mm:ss" -> saniye
@@ -104,3 +109,10 @@ export const UPCOMING_TIME_OPTIONS: SelectOption[] = [
   { value: '10', label: '10 saat' },
 ]
 
+export const VAULT_TIME_OPTIONS: SelectOption[] = [
+  { value: '', label: 'All' },
+  { value: '1', label: '1 saat' },
+  { value: '6', label: '6 saat' },
+  { value: '12', label: '12 saat' },
+  { value: '24', label: '24 saat' },
+]

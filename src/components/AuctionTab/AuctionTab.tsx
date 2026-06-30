@@ -82,6 +82,7 @@ export const AuctionTab = ({
                 onBid={() => console.log('bid', item.id)}
                 onRemind={(active) => console.log('remind', item.id, active)}
                 onWaypoint={(active) => console.log('waypoint', item.id, active)}
+                onAction={() => console.log('action', item.id)}
               />
 
               {/* JOINED: sonuç maskesi */}

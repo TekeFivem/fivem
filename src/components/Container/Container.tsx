@@ -1,6 +1,6 @@
 import styles from './Container.module.scss'
 import { AuctionControls } from '../AuctionControls/AuctionControls'
-import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge } from '../AuctionStats/AuctionStats'
+import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge, ValueBadge, SecurityBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
 
@@ -8,9 +8,11 @@ export const Container = ({
   name, tier = 'bronze', endTime, bid, participants,
   onJoin, onWaypoint, onRemind, variant = 'ongoing',
   winner, paid, result, onInspect, onBid,
+  estValue, security, onAction,
 }: AuctionCardProps) => {
   const c = useAuctionCard({ endTime, onWaypoint, onRemind })
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
+  const vault = variant === 'vault'
 
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
@@ -23,11 +25,15 @@ export const Container = ({
         ? <WinnerBadge winner={winner} className={styles.trTimer} />
         : <TimerBadge value={c.remaining} className={styles.trTimer} />}
 
-      {recent
+      {vault
+        ? <ValueBadge value={estValue ?? bid} className={styles.blBid} />
+        : recent
         ? <PaidBadge paid={paid} bid={bid} className={styles.blBid} />
         : <BidBadge bid={bid} className={styles.blBid} />}
 
-      <PartBadge participants={participants} className={styles.brPart} />
+      {vault
+        ? <SecurityBadge security={security} className={styles.brPart} />
+        : <PartBadge participants={participants} className={styles.brPart} />}
 
       <div className={styles.doors}>
         <span className={styles.seam} />
@@ -49,6 +55,7 @@ export const Container = ({
             onJoin={onJoin}
             onInspect={onInspect}
             onBid={onBid}
+            onAction={onAction}
           />
         </div>
       </div>
