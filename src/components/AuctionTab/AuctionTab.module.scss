@@ -13,7 +13,7 @@
   flex: 1;
   display: grid;
   grid-template-columns: repeat(var(--cols, 4), 1fr);
-  grid-auto-rows: 1fr;
+  grid-template-rows: repeat(var(--rows, 2), 1fr); /* ← sabit 2 satır */
   gap: 12px;
   overflow: hidden;
   min-height: 0;

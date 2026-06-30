@@ -87,16 +87,6 @@ export const AuctionTab = ({
                 onAction={() => (onAction ? onAction(item) : console.log('action', item.id))}
               />
 
-              {/* JOINED: sonuç maskesi */}
-              {variant === 'joined' && item.result && (
-                <div
-                  className={[styles.mask, item.result === 'won' ? styles.victory : styles.defeat].join(' ')}
-                >
-                  <span className={styles.maskText}>
-                    {item.result === 'won' ? 'VICTORY' : 'DEFEAT'}
-                  </span>
-                </div>
-              )}
             </div>
           )
         })}

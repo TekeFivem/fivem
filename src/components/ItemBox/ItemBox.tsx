@@ -3,7 +3,7 @@ import { AuctionControls } from '../AuctionControls/AuctionControls'
 import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge, ValueBadge, SecurityBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
-import { ExpiredMask } from '../ExpiredMask/ExpiredMask'
+import { CardMask, type MaskKind } from '../CardMask/CardMask'
 
 export const ItemBox = ({
   name, tier = 'bronze', endTime, bid, participants,
@@ -15,6 +15,13 @@ export const ItemBox = ({
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
   const vault = variant === 'vault'
   const expired = vault && c.remaining === '00:00:00'
+  const maskKind: MaskKind | null = expired
+    ? 'expired'
+    : variant === 'joined' && result
+      ? result === 'won'
+        ? 'victory'
+        : 'defeat'
+      : null
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <div className={[styles.band, styles.bandTop].join(' ')}>
@@ -52,14 +59,14 @@ export const ItemBox = ({
         {vault
           ? <ValueBadge value={estValue ?? bid} className={styles.bid} />
           : recent
-          ? <PaidBadge paid={paid} bid={bid} className={styles.bid} />
-          : <BidBadge bid={bid} className={styles.bid} />}
+            ? <PaidBadge paid={paid} bid={bid} className={styles.bid} />
+            : <BidBadge bid={bid} className={styles.bid} />}
 
         {vault
           ? <SecurityBadge security={security} className={styles.part} />
           : <PartBadge participants={participants} className={styles.part} />}
       </div>
-      {expired && <ExpiredMask />}
+      {maskKind && <CardMask kind={maskKind} />}
     </div>
   )
 }

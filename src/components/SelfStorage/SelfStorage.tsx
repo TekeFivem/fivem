@@ -3,7 +3,7 @@ import { AuctionControls } from '../AuctionControls/AuctionControls'
 import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge, ValueBadge, SecurityBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
-import { ExpiredMask } from '../ExpiredMask/ExpiredMask'
+import { CardMask, type MaskKind } from '../CardMask/CardMask'
 
 export const SelfStorage = ({
   name, tier = 'bronze', endTime, bid, participants,
@@ -15,6 +15,13 @@ export const SelfStorage = ({
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
   const vault = variant === 'vault'
   const expired = vault && c.remaining === '00:00:00'
+  const maskKind: MaskKind | null = expired
+    ? 'expired'
+    : variant === 'joined' && result
+      ? result === 'won'
+        ? 'victory'
+        : 'defeat'
+      : null
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <NameBadge name={name} className={styles.tlName} />
@@ -26,8 +33,8 @@ export const SelfStorage = ({
       {vault
         ? <ValueBadge value={estValue ?? bid} className={styles.blBid} />
         : recent
-        ? <PaidBadge paid={paid} bid={bid} className={styles.blBid} />
-        : <BidBadge bid={bid} className={styles.blBid} />}
+          ? <PaidBadge paid={paid} bid={bid} className={styles.blBid} />
+          : <BidBadge bid={bid} className={styles.blBid} />}
 
       {vault
         ? <SecurityBadge security={security} className={styles.brPart} />
@@ -49,7 +56,7 @@ export const SelfStorage = ({
           onAction={onAction}
         />
       </div>
-      {expired && <ExpiredMask />}
+      {maskKind && <CardMask kind={maskKind} />}
     </div>
   )
 }

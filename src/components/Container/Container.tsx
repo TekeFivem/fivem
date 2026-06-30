@@ -3,7 +3,7 @@ import { AuctionControls } from '../AuctionControls/AuctionControls'
 import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge, ValueBadge, SecurityBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
-import { ExpiredMask } from '../ExpiredMask/ExpiredMask'
+import { CardMask, type MaskKind } from '../CardMask/CardMask'
 
 export const Container = ({
   name, tier = 'bronze', endTime, bid, participants,
@@ -15,6 +15,13 @@ export const Container = ({
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
   const vault = variant === 'vault'
   const expired = vault && c.remaining === '00:00:00'
+const maskKind: MaskKind | null = expired
+  ? 'expired'
+  : variant === 'joined' && result
+  ? result === 'won'
+    ? 'victory'
+    : 'defeat'
+  : null
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <div className={styles.railTop} />
@@ -60,7 +67,7 @@ export const Container = ({
           />
         </div>
       </div>
-            {expired && <ExpiredMask />}
+            {maskKind && <CardMask kind={maskKind} />}
     </div>
   )
 }
