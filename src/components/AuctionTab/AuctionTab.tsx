@@ -13,6 +13,7 @@ import type { FiltersStore } from '../../store/createFiltersStore'
 import type { SelectOption } from '../SelectControl/SelectControl'
 import styles from './AuctionTab.module.scss'
 
+
 const CARD = { storage: SelfStorage, container: Container, itembox: ItemBox } as const
 
 export interface AuctionTabProps {
@@ -24,10 +25,11 @@ export interface AuctionTabProps {
   thresholdSec?: number
   labels?: { bid?: string; part?: string }
   searchByName?: boolean
+  onAction?: (item: AuctionItem) => void
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName, onAction
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
   const live = thresholdSec != null
@@ -82,7 +84,7 @@ export const AuctionTab = ({
                 onBid={() => console.log('bid', item.id)}
                 onRemind={(active) => console.log('remind', item.id, active)}
                 onWaypoint={(active) => console.log('waypoint', item.id, active)}
-                onAction={() => console.log('action', item.id)}
+                onAction={() => (onAction ? onAction(item) : console.log('action', item.id))}
               />
 
               {/* JOINED: sonuç maskesi */}

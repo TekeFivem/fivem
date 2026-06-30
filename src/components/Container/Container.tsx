@@ -3,6 +3,7 @@ import { AuctionControls } from '../AuctionControls/AuctionControls'
 import { NameBadge, TimerBadge, BidBadge, PartBadge, WinnerBadge, PaidBadge, ValueBadge, SecurityBadge } from '../AuctionStats/AuctionStats'
 import { useAuctionCard } from '../../hooks/useAuctionCard'
 import type { AuctionCardProps } from '../../lib/auctions'
+import { ExpiredMask } from '../ExpiredMask/ExpiredMask'
 
 export const Container = ({
   name, tier = 'bronze', endTime, bid, participants,
@@ -13,7 +14,7 @@ export const Container = ({
   const c = useAuctionCard({ endTime, onWaypoint, onRemind })
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
   const vault = variant === 'vault'
-
+  const expired = vault && c.remaining === '00:00:00'
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <div className={styles.railTop} />
@@ -59,6 +60,7 @@ export const Container = ({
           />
         </div>
       </div>
+            {expired && <ExpiredMask />}
     </div>
   )
 }
