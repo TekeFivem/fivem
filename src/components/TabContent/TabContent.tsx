@@ -17,7 +17,7 @@ export const TabContent = () => {
       return <RecentTab />
     case 'Joined':
       return <JoinedTab />
-    case 'Vault':          
+    case 'Vault':
       return <VaultTab />
     default:
       return null

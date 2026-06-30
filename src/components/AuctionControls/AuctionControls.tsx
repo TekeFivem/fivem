@@ -13,7 +13,8 @@ interface AuctionControlsProps {
   onReminder: () => void
   onJoin?: () => void
   onInspect?: () => void
-  onBid?: () => void
+  onBid?: () => void;
+  onAction?: () => void
 }
 
 export const AuctionControls = ({
@@ -28,6 +29,7 @@ export const AuctionControls = ({
   onJoin,
   onInspect,
   onBid,
+  onAction,
 }: AuctionControlsProps) => (
   <>
     {/* Üst satır: Location + (işaretliyse) pusula — HER VARIANT'TA AYNI */}
@@ -96,6 +98,11 @@ export const AuctionControls = ({
           <BidIcon />
         </span>
         Bid
+      </button>
+    ) : variant === 'vault' ? (
+      /* ---- VAULT: Action (modal açacak) ---- */
+      <button type="button" className={styles.joinBtn} onClick={onAction}>
+        Action
       </button>
     ) : (
       /* ---- ONGOING (default): Join ---- */
