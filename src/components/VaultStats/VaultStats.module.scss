@@ -1,0 +1,6 @@
+/* src/components/VaultStats/VaultStats.module.scss */
+.value { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 13px; letter-spacing: 1px; color: #1c1f25; }
+.sec   { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 1px; display: inline-flex; gap: 4px; align-items: center; }
+.unprotected { color: #c0392b; }
+.insured     { color: #b8860b; }
+.secured     { color: #1e8a4c; }
