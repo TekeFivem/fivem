@@ -1,0 +1,51 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: filter 0.15s ease, transform 0.08s ease;
+  &:hover { filter: brightness(1.05); }
+  &:active { transform: translateY(1px); }
+}
+
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1; /* küçük kare — artık uzamıyor */
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: #14161b;
+}
+.image { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.name {
+  position: absolute;
+  left: 5px; top: 5px; right: 5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+  color: #1c1f25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* kartta sadece değer: 3 dolar yatay, tek renk */
+.value { display: flex; justify-content: center; gap: 5px; padding: 3px 0; }
+.pip { display: inline-flex; width: 16px; height: 16px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6)); }
+
+.low  { color: #e0524f; }
+.mid  { color: #46e06b; }
+.high { color: #f3d979; }
+.unknown { color: #565b66; opacity: 0.5; }

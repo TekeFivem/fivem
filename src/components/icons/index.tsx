@@ -53,3 +53,35 @@ export const InspectIcon = () => (
     <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
   </svg>
 )
+
+// ── Loot alan ikonları ──
+export const DollarIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M12 1a1 1 0 0 1 1 1v1.07c2.28.46 4 2.28 4 4.43h-2.2c0-1.02-.78-1.9-1.8-2.2v4.35l.6.16c2.02.53 3.4 1.7 3.4 3.76 0 2.15-1.72 3.97-4 4.43V20a1 1 0 1 1-2 0v-1.07c-2.28-.46-4-2.28-4-4.43h2.2c0 1.02.78 1.9 1.8 2.2v-4.35l-.6-.16C8.38 11.31 7 10.14 7 8.08 7 5.93 8.72 4.11 11 3.65V2a1 1 0 0 1 1-1z" />
+  </svg>
+)
+export const DropIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" />
+  </svg>
+)
+export const WrenchIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M22.7 19.3 13.6 10.2a5 5 0 0 0-6.5-6.5l3.5 3.5-3 3-3.5-3.5a5 5 0 0 0 6.5 6.5l9.1 9.1 2.5-2.5z" />
+  </svg>
+)
+export const GemIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M6 3h12l3 6-9 12L3 9l3-6z" />
+  </svg>
+)
+export const FlameIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M12 2c1 3-1 4-2 6-1 1.7-2 3-2 5a6 6 0 0 0 12 0c0-3-2-5-3-7-.5 1-1 1.5-2 1.5 0-2 0-3.5-3-5.5z" />
+  </svg>
+)
+export const ShieldIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+    <path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" />
+  </svg>
+)
