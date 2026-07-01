@@ -5,6 +5,7 @@ import { RecentTab } from '../../tabs/RecentTab/RecentTab'
 import { JoinedTab } from '../../tabs/JoinedTab/JoinedTab'
 import { VaultTab } from '../../tabs/VaultTab/VaultTab'
 import { LootTab } from '../../tabs/LootTab/LootTab'
+import { LeaderboardTab } from '../../tabs/LeaderboardTab/LeaderboardTab'
 
 export const TabContent = () => {
   const activeTab = useTabsStore((s) => s.activeTab)
@@ -20,8 +21,10 @@ export const TabContent = () => {
       return <JoinedTab />
     case 'Vault':
       return <VaultTab />
-      case 'Loot':
-  return <LootTab />
+    case 'Loot':
+      return <LootTab />
+    case 'Leaderboard':
+      return <LeaderboardTab />
     default:
       return null
   }
