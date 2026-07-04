@@ -1,6 +1,6 @@
-import type { AuctionItem } from '../../lib/auctions'
+import { useEffect, useState } from 'react'
+import { toSeconds, formatHMS, type AuctionItem } from '../../lib/auctions'
 import { NameBadge, TimerBadge, BidBadge, PartBadge } from '../AuctionStats/AuctionStats'
-import { useCountdown } from '../../hooks/useCountdown'
 import { BidStorage } from './BidStorage'
 import { BidScratch } from './BidScratch'
 import styles from './BidContent.module.scss'
@@ -16,11 +16,20 @@ interface Props {
 }
 
 export const BidContent = ({ item }: Props) => {
-  const remaining = useCountdown(item.endTime)
+  const [secondsLeft, setSecondsLeft] = useState(() => toSeconds(item.endTime))
+
+  useEffect(() => {
+    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  // open → final (son 10 sn) → ended (0 sn). Recent'ta endTime 00:00:00 → direkt ended.
+  const phase: 'open' | 'final' | 'ended' =
+    secondsLeft <= 0 ? 'ended' : secondsLeft <= 10 ? 'final' : 'open'
+  const remaining = formatHMS(secondsLeft)
 
   return (
     <div className={styles.content}>
-      {/* TOPBAR */}
       <header className={styles.topbar}>
         <NameBadge name={item.name} />
         <div className={styles.stats}>
@@ -30,7 +39,6 @@ export const BidContent = ({ item }: Props) => {
         </div>
       </header>
 
-      {/* SELF STORAGE */}
       <div className={styles.storageArea}>
         {item.kind === 'container' ? (
           <BidContainer tier={item.tier} />
@@ -41,26 +49,11 @@ export const BidContent = ({ item }: Props) => {
         )}
       </div>
 
-      {/* SCRATCH */}
-      <div className={styles.scratchArea}>
-        <BidScratch />
-      </div>
-      {/* INFO — scratch'in yanında */}
-      <div className={styles.infoArea}>
-        <BidInfo item={item} />
-      </div>
-      {/* BID PANELİ — storage'ın altında */}
-      <div className={styles.bidArea}>
-        <BidPanel item={item} />
-      </div>
-      {/* HACK PANELİ — bid panelin sağı */}
-      <div className={styles.hackArea}>
-        <BidHack />
-      </div>
-      {/* CHAT — kalan bölge */}
-      <div className={styles.chatArea}>
-        <BidChat />
-      </div>
+      <div className={styles.scratchArea}><BidScratch /></div>
+      <div className={styles.infoArea}><BidInfo item={item} /></div>
+      <div className={styles.bidArea}><BidPanel item={item} phase={phase} /></div>
+      <div className={styles.hackArea}><BidHack /></div>
+      <div className={styles.chatArea}><BidChat /></div>
     </div>
   )
 }

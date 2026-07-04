@@ -4,113 +4,129 @@ import { SevenSegment } from '../SevenSegment/SevenSegment'
 import { BidIcon } from '../icons'
 import styles from './BidPanel.module.scss'
 
-interface BidEntry {
-  id: string
-  player: string | null // null → gizli
-  amount: number
-}
+interface BidEntry { id: string; player: string; amount: number; hidden: boolean }
 
 const MIN_BID: Record<Tier, number> = { bronze: 150, silver: 300, gold: 600 }
 const presetsFor = (tier: Tier) => [1, 2, 4, 8].map((m) => MIN_BID[tier] * m)
+const money = (n: number) => `$${n.toLocaleString('en-US')}`
+const label = (b: BidEntry) => (b.hidden ? 'Gizli Teklif' : b.player)
 
 const SEED_BIDS: BidEntry[] = [
-  { id: 'b1', player: 'Mike_T', amount: 600 },
-  { id: 'b2', player: null, amount: 300 },
-  { id: 'b3', player: 'Aria', amount: 150 },
-  { id: 'b4', player: 'Berkay', amount: 300 },
-  { id: 'b5', player: 'Deniz', amount: 150 },
+  { id: 'b1', player: 'Mike_T', amount: 600, hidden: false },
+  { id: 'b2', player: 'Cem',    amount: 300, hidden: true },
+  { id: 'b3', player: 'Aria',   amount: 150, hidden: false },
+  { id: 'b4', player: 'Berkay', amount: 300, hidden: false },
+  { id: 'b5', player: 'Deniz',  amount: 150, hidden: true },
 ]
 
 interface Props {
   item: AuctionItem
+  phase?: 'open' | 'final' | 'ended'
 }
 
-export const BidPanel = ({ item }: Props) => {
+export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const tier: Tier = item.tier ?? 'bronze'
   const presets = useMemo(() => presetsFor(tier), [tier])
   const [bids, setBids] = useState<BidEntry[]>(SEED_BIDS)
   const [price, setPrice] = useState(item.bid)
   const [hidden, setHidden] = useState(false)
   const [custom, setCustom] = useState('')
+  const [finalBidUsed, setFinalBidUsed] = useState(false)
+
+  // final fazda YALNIZCA 1 teklif
+  const lockBids = phase === 'final' && finalBidUsed
 
   const placeBid = (amount: number) => {
-    if (!amount || amount <= 0) return
-    setBids((prev) =>
-      [{ id: `me-${Date.now()}`, player: hidden ? null : 'Sen', amount }, ...prev].slice(0, 5),
-    )
+    if (!amount || amount <= 0 || phase === 'ended') return
+    if (phase === 'final' && finalBidUsed) return   // ← son 10 sn'de tek teklif
+    setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount, hidden }, ...prev].slice(0, 5))
     setPrice((p) => p + amount)
-    // TODO: FiveM → fetchNui('placeBid', { auctionId: item.id, amount, hidden })
+    if (phase === 'final') setFinalBidUsed(true)
+    // TODO: FiveM → fetchNui('placeBid', { auctionId: item.id, amount, hidden, blind: phase === 'final' })
   }
-
   const submitCustom = () => {
     const amt = Math.round(Number(custom))
-    if (Number.isFinite(amt) && amt > 0) {
-      placeBid(amt)
-      setCustom('')
-    }
+    if (Number.isFinite(amt) && amt > 0) { placeBid(amt); setCustom('') }
   }
+
+  const winner = useMemo(() => {
+    if (item.winner) return { name: item.winner, amount: item.paid ?? price }
+    const top = [...bids].sort((a, b) => b.amount - a.amount)[0]
+    return top ? { name: label(top), amount: top.amount } : null
+  }, [bids, item.winner, item.paid, price])
+
+  const priceLabel = phase === 'ended' ? 'Son Fiyat' : phase === 'final' ? 'Son Teklif' : 'Güncel Fiyat'
+  const priceValue = phase === 'ended' ? (winner?.amount ?? price) : price
 
   return (
     <div className={styles.panel}>
-      {/* 1) GÜNCEL FİYAT */}
       <div className={styles.priceBar}>
         <span className={styles.priceIcon}><BidIcon /></span>
-        <span className={styles.priceLabel}>Price</span>
-        <span className={styles.priceValue}>
-          <SevenSegment value={`${price}$`} color="#f3d979" size={20} />
-        </span>
+        <span className={styles.priceLabel}>{priceLabel}</span>
+        <span className={styles.priceValue}><SevenSegment value={`${priceValue}$`} color="#f3d979" size={20} /></span>
       </div>
 
-      {/* 2) İSİMLER + BİDLER */}
-      <ul className={styles.bidList}>
-        {bids.map((b) => (
-          <li
-            key={b.id}
-            className={[styles.bidRow, b.player === null && styles.secret].filter(Boolean).join(' ')}
+      {phase === 'final' ? (
+        <div className={styles.blind}>
+          <span className={styles.blindIcon}>🔒</span>
+          <span className={styles.blindText}>
+            {finalBidUsed
+              ? 'Son teklifin verildi — sonucu bekle. Rakip teklifleri gizli.'
+              : 'Son 10 saniye — rakip teklifleri gizli. Tek son teklifini gir!'}
+          </span>
+        </div>
+      ) : (
+        <ul className={styles.bidList}>
+          {bids.map((b) => (
+            <li key={b.id} className={[styles.bidRow, b.hidden && styles.secret].filter(Boolean).join(' ')}>
+              <span className={styles.player}>{label(b)}</span>
+              <span className={styles.amount}><SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} /></span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {phase === 'ended' ? (
+        <div className={styles.winner}>
+          <span className={styles.winnerIcon}>🏆</span>
+          <span className={styles.winnerName}>{winner?.name ?? '—'}</span>
+          <span className={styles.winnerAmount}>{winner ? money(winner.amount) : ''}</span>
+        </div>
+      ) : (
+        <>
+          <div className={styles.presets}>
+            {presets.map((amt) => (
+              <button key={amt} type="button" className={styles.preset} disabled={lockBids} onClick={() => placeBid(amt)}>
+                +{amt}$
+              </button>
+            ))}
+          </div>
+          <div className={styles.customRow}>
+            <input
+              className={styles.customInput}
+              type="number"
+              min={0}
+              placeholder="Özel tutar"
+              value={custom}
+              disabled={lockBids}
+              onChange={(e) => setCustom(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
+            />
+            <button type="button" className={styles.customBtn} disabled={lockBids} onClick={submitCustom}>Bid Ver</button>
+          </div>
+          <button
+            type="button"
+            className={[styles.secretPlate, hidden && styles.secretOn].filter(Boolean).join(' ')}
+            onClick={() => setHidden((h) => !h)}
+            disabled={lockBids}
+            aria-pressed={hidden}
           >
-            <span className={styles.player}>{b.player ?? 'Gizli Teklif'}</span>
-            <span className={styles.amount}>
-              <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* 3) PRESET + CUSTOM BID */}
-      <div className={styles.presets}>
-        {presets.map((amt) => (
-          <button key={amt} type="button" className={styles.preset} onClick={() => placeBid(amt)}>
-            +{amt}$
+            <span className={styles.secretDot} />
+            <span className={styles.secretText}>Gizli Bid</span>
+            <span className={styles.secretState}>{hidden ? 'AÇIK' : 'KAPALI'}</span>
           </button>
-        ))}
-      </div>
-
-      <div className={styles.customRow}>
-        <input
-          className={styles.customInput}
-          type="number"
-          min={0}
-          placeholder="Özel tutar"
-          value={custom}
-          onChange={(e) => setCustom(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
-        />
-        <button type="button" className={styles.customBtn} onClick={submitCustom}>
-          Bid Ver
-        </button>
-      </div>
-
-      {/* 4) GİZLİ BID — tabela */}
-      <button
-        type="button"
-        className={[styles.secretPlate, hidden && styles.secretOn].filter(Boolean).join(' ')}
-        onClick={() => setHidden((h) => !h)}
-        aria-pressed={hidden}
-      >
-        <span className={styles.secretDot} />
-        <span className={styles.secretText}>Gizli Bid</span>
-        <span className={styles.secretState}>{hidden ? 'AÇIK' : 'KAPALI'}</span>
-      </button>
+        </>
+      )}
     </div>
   )
 }

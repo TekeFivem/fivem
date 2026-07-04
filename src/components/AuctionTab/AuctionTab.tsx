@@ -13,7 +13,6 @@ import type { FiltersStore } from '../../store/createFiltersStore'
 import type { SelectOption } from '../SelectControl/SelectControl'
 import styles from './AuctionTab.module.scss'
 
-
 const CARD = { storage: SelfStorage, container: Container, itembox: ItemBox } as const
 
 export interface AuctionTabProps {
@@ -30,7 +29,8 @@ export interface AuctionTabProps {
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName, onAction,onJoin
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,
+  onAction, onJoin,
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
   const live = thresholdSec != null
@@ -51,7 +51,7 @@ export const AuctionTab = ({
     thresholdSec,
     now,
     deadlines: deadlines.current,
-    groupDecidedLast: variant === 'joined'
+    groupDecidedLast: variant === 'joined',
   })
 
   return (
@@ -80,14 +80,13 @@ export const AuctionTab = ({
                 winner={item.winner}
                 paid={item.paid}
                 result={item.result}
-                onInspect={() => console.log('inspect', item.id)}
+                onInspect={() => onJoin?.(item)}
                 onJoin={() => { join(item); onJoin?.(item) }}
-                onBid={() => console.log('bid', item.id)}
+                onBid={() => onJoin?.(item)}
                 onRemind={(active) => console.log('remind', item.id, active)}
                 onWaypoint={(active) => console.log('waypoint', item.id, active)}
                 onAction={() => (onAction ? onAction(item) : console.log('action', item.id))}
               />
-
             </div>
           )
         })}

@@ -11,12 +11,12 @@ interface HackDef {
   affected: string // gizli: "X: <affected>"
 }
 const HACKS: HackDef[] = [
-  { id: 'double',   label: 'Double Bid',    cost: 1000, verb: 'bid’ini katladı',         affected: 'bid’i katlandı' },
-  { id: 'jam',      label: 'Lock Bidder',   cost: 1200, verb: 'bid vermesini engelledi', affected: 'bid veremiyor' },
-  { id: 'blackout', label: 'Blind Bidder',       cost: 800,  verb: 'ekranını kör etti',       affected: 'kör edildi' },
-  { id: 'deanon',   label: 'Unreveal Hidden',  cost: 1500, verb: 'kimliğini ifşa etti',     affected: 'ifşa edildi' },
-  { id: 'spoof',    label: 'Fake Bid',    cost: 600,  verb: 'sahte bid enjekte etti',  affected: 'sahte bid gördü' },
-  { id: 'freeze',   label: 'Freeze Price', cost: 900,  verb: 'fiyatı dondurdu',         affected: 'fiyatı donduruldu' },
+  { id: 'double', label: 'Double Bid', cost: 1000, verb: 'bid’ini katladı', affected: 'bid’i katlandı' },
+  { id: 'jam', label: 'Lock Bidder', cost: 1200, verb: 'bid vermesini engelledi', affected: 'bid veremiyor' },
+  { id: 'blackout', label: 'Blind Bidder', cost: 800, verb: 'ekranını kör etti', affected: 'kör edildi' },
+  { id: 'deanon', label: 'Unreveal Hidden', cost: 1500, verb: 'kimliğini ifşa etti', affected: 'ifşa edildi' },
+  { id: 'spoof', label: 'Fake Bid', cost: 600, verb: 'sahte bid enjekte etti', affected: 'sahte bid gördü' },
+  { id: 'freeze', label: 'Freeze Price', cost: 900, verb: 'fiyatı dondurdu', affected: 'fiyatı donduruldu' },
 ]
 
 const TRACE_STEPS = [5, 10, 25, 45, 70, 100]
@@ -76,14 +76,14 @@ const TraceMinigame = ({ onClose, onResult }: { onClose: () => void; onResult: (
   )
 }
 
-export const BidHack = () => {
+export const BidHack = ({ phase = 'open' }: { phase?: 'open' | 'final' | 'ended' }) => {
   const [view, setView] = useState<'hacks' | 'log'>('hacks')
   const [budget, setBudget] = useState(25000)
   const [traceIndex, setTraceIndex] = useState(0)
   const [log, setLog] = useState<LogEntry[]>([])
   const [gameOpen, setGameOpen] = useState(false)
   const [pendingHack, setPendingHack] = useState<HackDef | null>(null)
-
+  const blocked = (id: string) => phase === 'ended' || (phase === 'final' && id !== 'double')
   const exposureChance = TRACE_STEPS[Math.min(traceIndex, TRACE_STEPS.length - 1)]
 
   const runHack = (hack: HackDef, target: string) => {
@@ -137,15 +137,25 @@ export const BidHack = () => {
         <>
           <div className={styles.hacks}>
             {HACKS.map((h) => (
-              <button key={h.id} type="button" className={styles.hackBtn} disabled={budget < h.cost} onClick={() => setPendingHack(h)}>
+              <button
+                key={h.id}
+                type="button"
+                className={styles.hackBtn}
+                disabled={budget < h.cost || blocked(h.id)}
+                onClick={() => setPendingHack(h)}
+              >
                 <span className={styles.hackName}>{h.label}</span>
                 <span className={styles.hackCost}>{money(h.cost)}</span>
               </button>
             ))}
           </div>
           <div className={styles.cleanRow}>
-            <button type="button" className={styles.cleanBtn} disabled={budget < CLEAN_COST || traceIndex === 0} onClick={cleanWithMoney}>İz Temizle · {money(CLEAN_COST)}</button>
-            <button type="button" className={styles.cleanBtn} disabled={traceIndex === 0} onClick={() => setGameOpen(true)}>Görev</button>
+            <button type="button" className={styles.cleanBtn}
+              disabled={budget < CLEAN_COST || traceIndex === 0 || phase !== 'open'}
+              onClick={cleanWithMoney}>Remove Trace {money(CLEAN_COST)}</button>
+            <button type="button" className={styles.cleanBtn}
+              disabled={traceIndex === 0 || phase !== 'open'}
+              onClick={() => setGameOpen(true)}>Misson</button>
           </div>
         </>
       ) : (
