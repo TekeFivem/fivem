@@ -26,10 +26,11 @@ export interface AuctionTabProps {
   labels?: { bid?: string; part?: string }
   searchByName?: boolean
   onAction?: (item: AuctionItem) => void
+  onJoin?: (item: AuctionItem) => void
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName, onAction
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName, onAction,onJoin
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
   const live = thresholdSec != null
@@ -80,7 +81,7 @@ export const AuctionTab = ({
                 paid={item.paid}
                 result={item.result}
                 onInspect={() => console.log('inspect', item.id)}
-                onJoin={() => join(item)}
+                onJoin={() => { join(item); onJoin?.(item) }}
                 onBid={() => console.log('bid', item.id)}
                 onRemind={(active) => console.log('remind', item.id, active)}
                 onWaypoint={(active) => console.log('waypoint', item.id, active)}

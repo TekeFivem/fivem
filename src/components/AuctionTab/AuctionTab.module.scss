@@ -13,7 +13,8 @@
   flex: 1;
   display: grid;
   grid-template-columns: repeat(var(--cols, 4), 1fr);
-  grid-template-rows: repeat(var(--rows, 2), 1fr); /* ← sabit 2 satır */
+  grid-template-rows: repeat(var(--rows, 2), 1fr);
+  /* ← sabit 2 satır */
   gap: 12px;
   overflow: hidden;
   min-height: 0;
@@ -241,9 +242,21 @@
 /* kart + maske sarmalı */
 .cardWrap {
   position: relative;
-  display: grid;
-  /* kart hücreyi eskisi gibi doldurur */
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  /* güvenlik: taşarsa kesmesin, binmesin */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* kartı hücre YÜKSEKLİĞİNE oturt (4/3 korunur, ortalı) */
+.cardWrap>div {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
 }
 
 
