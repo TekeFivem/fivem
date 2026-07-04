@@ -1,0 +1,395 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.panel {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    @include metallic-surface(160deg);
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.tabOn {
+    background: linear-gradient(180deg, #f3d979, #caa63a);
+    color: #2b2200;
+}
+
+.budget {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    color: #2f5d2f;
+}
+
+/* İZ TABELASI — yüzde + bar tek metal plakada */
+.tracePlate {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    @include metallic-surface(180deg);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.45),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.35),
+        0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.tracePlateHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.traceLabel {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1c1f25;
+    opacity: 0.85;
+}
+
+.traceVal {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    color: #b21f1f;
+}
+
+.traceBar {
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.traceFill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #e0c33a, #e0524f);
+    transition: width 0.2s;
+}
+
+.hacks {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 6px;
+}
+
+.hackBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.4);
+    transition: filter 0.15s, transform 0.08s;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.06);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(0.6);
+    }
+}
+
+.hackName {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.hackCost {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #5b3a00;
+}
+
+.cleanRow {
+    display: flex;
+    gap: 6px;
+}
+
+.cleanBtn {
+    flex: 1;
+    padding: 6px 4px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    transition: filter 0.15s, transform 0.08s;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.06);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(0.6);
+    }
+}
+
+.log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.logEmpty {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #7f858f;
+    text-align: center;
+    padding: 8px;
+}
+
+.logRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.logDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6c717b;
+    flex: none;
+}
+
+.logExposed {
+    box-shadow: inset 0 0 0 1px rgba(224, 82, 79, 0.6);
+}
+
+.logExposed .logDot {
+    background: #e0524f;
+    box-shadow: 0 0 5px rgba(224, 82, 79, 0.8);
+}
+
+.logText {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #1c1f25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---- MODAL (hedef seçme + minigame ortak) ---- */
+.backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.modal {
+    width: 340px;
+    max-width: 92%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 10px;
+    @include metallic-surface(160deg);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modalHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modalTitle {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1c1f25;
+}
+
+.modalClose {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    color: #7a1f1f;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+}
+
+.modalHint {
+    margin: 0;
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #1c1f25;
+    opacity: 0.8;
+}
+
+/* hedef listesi (modal) */
+.targetList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.targetItem {
+    padding: 9px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.4);
+    transition: filter 0.15s, transform 0.08s;
+
+    &:hover {
+        filter: brightness(1.06);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+/* minigame */
+.track {
+    position: relative;
+    height: 22px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(63, 224, 111, 0.4);
+    box-shadow: inset 0 0 0 1px rgba(63, 224, 111, 0.7);
+}
+
+.marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transform: translateX(-50%);
+    background: #f3d979;
+    box-shadow: 0 0 6px rgba(243, 217, 121, 0.9);
+}
+
+.stopBtn {
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #14321c;
+    background: linear-gradient(180deg, #7fe6a0, #3f9d63);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+.result {
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.win {
+    color: #2f5d2f;
+    background: rgba(63, 224, 111, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(63, 224, 111, 0.5);
+}
+
+.lose {
+    color: #b21f1f;
+    background: rgba(224, 82, 79, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(224, 82, 79, 0.5);
+}

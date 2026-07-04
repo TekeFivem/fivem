@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
+
 import { useOngoingFiltersStore } from '../../store/createFiltersStore'
 import { useJoinedStore } from '../../store/joinedStore'
 import { ONGOING_TIME_OPTIONS, type AuctionItem } from '../../lib/auctions'
+import { BidContent } from '../../components/BidContent/BidContent'
+
 
 const MOCK: AuctionItem[] = [
   { kind: 'storage', id: 's1', name: 'STR-12', tier: 'gold', endTime: '01:23:45', bid: 10000, participants: 7 },
@@ -23,6 +27,13 @@ export const OngoingTab = () => {
   const joinedIds = new Set(joined.map((j) => j.id))
   const items = MOCK.filter((m) => !joinedIds.has(m.id))
 
+  const [bidItem, setBidItem] = useState<AuctionItem | null>(null)
+
+  // Join'e basınca content alanı bid görünümüne döner (topbar/bottombar yok)
+  if (bidItem) {
+    return <BidContent item={bidItem} />
+  }
+
   return (
     <AuctionTab
       items={items}
@@ -30,6 +41,7 @@ export const OngoingTab = () => {
       variant="ongoing"
       timeOptions={ONGOING_TIME_OPTIONS}
       timeUnitSeconds={60}
+      onJoin={(item) => setBidItem(item)}
     />
   )
 }

@@ -40,6 +40,7 @@ export interface AuctionCardProps {
   estValue?: number
   security?: VaultSecurity
   onAction?: () => void // vault: Action butonu (modal açacak)
+  bare?:boolean
 }
 
 // "hh:mm:ss" -> saniye

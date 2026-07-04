@@ -1,0 +1,52 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.panel {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  @include metallic-surface(160deg);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+.avatar {
+  width: 34px; height: 34px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 16px; color: #1c1f25;
+  background: linear-gradient(180deg, $metal-light, $metal-mid);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.headText { display: flex; flex-direction: column; min-width: 0; }
+.name {
+  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 13px; letter-spacing: 0.5px; color: #1c1f25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sub { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #5b3a00; }
+
+.rows {
+  list-style: none; margin: 0; padding: 0;
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px 8px; border-radius: 5px;
+  background: rgba(0, 0, 0, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+.label { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #1c1f25; opacity: 0.8; }
+.value { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 11px; color: #2f5d2f; white-space: nowrap; }

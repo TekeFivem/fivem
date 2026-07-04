@@ -1,0 +1,74 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.content {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-rows: 46px 320px minmax(0, 1fr); /* 1: topbar · 2: gövde · 3: alt */
+  gap: 8px;
+}
+
+/* ---- TOPBAR ---- */
+.topbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: 8px;
+  @include metallic-surface(180deg);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+.stats { display: flex; align-items: center; gap: 10px; }
+
+/* ---- SELF STORAGE ---- */
+.storageArea {
+  grid-column: 1 / span 5;
+  grid-row: 2;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- SCRATCH (yerleşim; iç grid BidScratch içinde) ---- */
+.scratchArea {
+  grid-column: 6 / span 2;   /* ← scratch yeri/genişliği */
+  grid-row: 2;               /* ← scratch yüksekliği */
+  min-height: 0;
+  overflow: hidden;
+}
+/* ---- INFO (scratch'in yanı) ---- */
+.infoArea {
+  grid-column: 8 / span 3;   /* ← info yeri/genişliği */
+  grid-row: 2;               /* ← info yüksekliği */
+  min-height: 0;
+  overflow: hidden;
+}
+.bidArea {
+  grid-column: 1 / span 3;   /* storage ile aynı kolonlar */
+  grid-row: 3;               /* alt satır */
+  min-height: 0;
+  overflow: hidden;
+}
+.hackArea {
+  grid-column: 4 / span 3;  /* bid 1-3 ise hack 4-6 */
+  grid-row: 3;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- CHAT (kalan bölge) ---- */
+.chatArea {
+  grid-column: 7 / span 4;  /* 4 kolon */
+  grid-row: 3;
+  min-height: 0;
+  overflow: hidden;
+}

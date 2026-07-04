@@ -1,7 +1,8 @@
-import { RefreshIcon, CloseIcon } from '../icons'
 import { SegmentedControl } from '../SegmentedControl/SegmentedControl'
 import { SelectControl, type SelectOption } from '../SelectControl/SelectControl'
 import { SearchControl } from '../SearchControl/SearchControl'
+import { FilterField } from '../FilterField/FilterField'
+import { FilterBarShell } from '../FilterBarShell/FilterBarShell'
 import {
   TIER_OPTIONS, KIND_OPTIONS, DIR_OPTIONS, BID_OPTIONS,
   PART_OPTIONS, type Tier, type AuctionKind, type Dir,
@@ -31,81 +32,51 @@ export const FilterBar = ({ filters, timeOptions = [], labels, searchByName, onR
     nameQuery.trim() !== ''
 
   return (
-    <div className={styles.topBar}>
-      {hasFilters && (
-        <div className={styles.cornerLeft}>
-          <button type="button" className={styles.clearBtn} onClick={clearFilters} aria-label="Temizle">
-            {'CLEAR'.split('').map((ch, i) => (
-              <span key={i}>{ch}</span>
-            ))}
-          </button>
-        </div>
-      )}
-
-      <div className={styles.filterStack}>
-        <div className={styles.filterRow}>
-          <SegmentedControl<Tier> label="Tier" options={TIER_OPTIONS} selected={tiers} onToggle={toggleTier} />
-          <span className={styles.divider} />
-          <SegmentedControl<AuctionKind> label="Type" options={KIND_OPTIONS} selected={kinds} onToggle={toggleKind} />
-        </div>
-
-        <div className={styles.filterRow}>
-          <div className={styles.filterGroup}>
-            <SelectControl
-              label={labels?.bid ?? 'Money'}
-              value={bidPreset === null ? '' : String(bidPreset)}
-              options={BID_OPTIONS}
-              onChange={(v) => setBidPreset(v === '' ? null : Number(v))}
-            />
-            <SelectControl value={bidDir} options={DIR_OPTIONS} onChange={(v) => setBidDir(v as Dir)} />
-          </div>
-
-          <span className={styles.divider} />
-
-          {/* Recent → isim araması, diğerleri → Time filtresi */}
-          {searchByName ? (
-            <div className={styles.filterGroup}>
-              <SearchControl
-                label="Winner"
-                value={nameQuery}
-                placeholder="Search"
-                onChange={setNameQuery}
-              />
-            </div>
-          ) : (
-            <div className={styles.filterGroup}>
-              <SelectControl
-                label="Time"
-                value={timePreset === null ? '' : String(timePreset)}
-                options={timeOptions}
-                onChange={(v) => setTimePreset(v === '' ? null : Number(v))}
-              />
-              <SelectControl value={timeDir} options={DIR_OPTIONS} onChange={(v) => setTimeDir(v as Dir)} />
-            </div>
-          )}
-
-          <span className={styles.divider} />
-
-          <div className={styles.filterGroup}>
-            <SelectControl
-              label={labels?.part ?? 'Participants'}
-              value={partPreset === null ? '' : String(partPreset)}
-              options={PART_OPTIONS}
-              onChange={(v) => setPartPreset(v === '' ? null : Number(v))}
-            />
-            <SelectControl value={partDir} options={DIR_OPTIONS} onChange={(v) => setPartDir(v as Dir)} />
-          </div>
-        </div>
+    <FilterBarShell hasFilters={hasFilters} onClear={clearFilters} onRefresh={onRefresh} onClose={onClose}>
+      <div className={styles.filterRow}>
+        <FilterField label="Tier">
+          <SegmentedControl<Tier> options={TIER_OPTIONS} selected={tiers} onToggle={toggleTier} />
+        </FilterField>
+        <FilterField label="Type">
+          <SegmentedControl<AuctionKind> options={KIND_OPTIONS} selected={kinds} onToggle={toggleKind} />
+        </FilterField>
       </div>
 
-      <div className={styles.cornerActions}>
-        <button type="button" className={[styles.iconBtn, styles.closeBtn].join(' ')} aria-label="Kapat" onClick={onClose}>
-          <CloseIcon />
-        </button>
-        <button type="button" className={styles.iconBtn} aria-label="Yenile" onClick={onRefresh}>
-          <RefreshIcon />
-        </button>
+      <div className={styles.filterRow}>
+        <FilterField label={labels?.bid ?? 'Money'}>
+          <SelectControl
+            value={bidPreset === null ? '' : String(bidPreset)}
+            options={BID_OPTIONS}
+            onChange={(v) => setBidPreset(v === '' ? null : Number(v))}
+          />
+          <SelectControl value={bidDir} options={DIR_OPTIONS} onChange={(v) => setBidDir(v as Dir)} />
+        </FilterField>
+
+        {/* Recent → isim araması, diğerleri → Time filtresi */}
+        {searchByName ? (
+          <FilterField label="Winner">
+            <SearchControl value={nameQuery} placeholder="Search" onChange={setNameQuery} />
+          </FilterField>
+        ) : (
+          <FilterField label="Time">
+            <SelectControl
+              value={timePreset === null ? '' : String(timePreset)}
+              options={timeOptions}
+              onChange={(v) => setTimePreset(v === '' ? null : Number(v))}
+            />
+            <SelectControl value={timeDir} options={DIR_OPTIONS} onChange={(v) => setTimeDir(v as Dir)} />
+          </FilterField>
+        )}
+
+        <FilterField label={labels?.part ?? 'Participants'}>
+          <SelectControl
+            value={partPreset === null ? '' : String(partPreset)}
+            options={PART_OPTIONS}
+            onChange={(v) => setPartPreset(v === '' ? null : Number(v))}
+          />
+          <SelectControl value={partDir} options={DIR_OPTIONS} onChange={(v) => setPartDir(v as Dir)} />
+        </FilterField>
       </div>
-    </div>
+    </FilterBarShell>
   )
 }

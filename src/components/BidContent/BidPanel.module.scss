@@ -1,0 +1,89 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.panel {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  @include metallic-surface(160deg);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.priceBar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px; border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)), $screen-bg;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.priceIcon { display: inline-flex; width: 18px; height: 18px; color: $gold-light; }
+.priceLabel { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #c7ccd6; }
+.priceValue { margin-left: auto; display: inline-flex; }
+
+.bidList {
+  list-style: none; margin: 0; padding: 0;
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.bidRow {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3px 8px; border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  @include metallic-surface(180deg);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  min-width: 0;
+}
+.player { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #1c1f25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.amount { display: inline-flex; margin-left: 8px; }
+.secret .player { color: #6a4db0; font-style: italic; }
+
+.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.preset {
+  padding: 6px 4px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, 0.4); cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; color: #1c1f25; white-space: nowrap;
+  background: linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: filter 0.15s, transform 0.08s;
+  &:hover { filter: brightness(1.06); }
+  &:active { transform: translateY(1px); }
+}
+.customRow { display: flex; gap: 6px; }
+.customInput {
+  flex: 1; min-width: 0; padding: 6px 10px; border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.45); background: rgba(0, 0, 0, 0.25); color: #eef1f6;
+  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px;
+  &::placeholder { color: #7f858f; }
+}
+.customBtn {
+  padding: 6px 14px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, 0.4); cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #14321c;
+  background: linear-gradient(180deg, #7fe6a0 0%, #3f9d63 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: filter 0.15s, transform 0.08s;
+  &:hover { filter: brightness(1.06); }
+  &:active { transform: translateY(1px); }
+}
+
+.secretPlate {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  @include metallic-surface(160deg);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.45);
+  transition: filter 0.15s, transform 0.08s;
+  &:hover { filter: brightness(1.05); }
+  &:active { transform: translateY(1px); }
+}
+.secretDot { width: 10px; height: 10px; border-radius: 50%; background: #6c717b; box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6); }
+.secretText { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #1c1f25; }
+.secretState { margin-left: auto; font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 1px; color: #7a1f1f; }
+.secretOn { background: linear-gradient(180deg, #f3d979 0%, #caa63a 100%); border-color: rgba(90, 60, 0, 0.6); }
+.secretOn .secretDot { background: #3fe06f; box-shadow: 0 0 6px rgba(63, 224, 111, 0.85), inset 0 0 2px rgba(0, 0, 0, 0.4); }
+.secretOn .secretText { color: #2b2200; }
+.secretOn .secretState { color: #2f5d2f; }

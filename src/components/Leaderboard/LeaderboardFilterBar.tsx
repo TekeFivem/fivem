@@ -1,7 +1,7 @@
-import { RefreshIcon, CloseIcon } from '../icons'
 import { SelectControl } from '../SelectControl/SelectControl'
 import { SearchControl } from '../SearchControl/SearchControl'
-import { FilterField } from './FilterField'
+import { FilterField } from '../FilterField/FilterField'
+import { FilterBarShell } from '../FilterBarShell/FilterBarShell'
 import {
   METRIC_OPTIONS, PERIOD_OPTIONS, LB_DIR_OPTIONS,
   type LeaderboardMetric, type LeaderboardPeriod,
@@ -26,50 +26,30 @@ export const LeaderboardFilterBar = ({ filters, onRefresh, onClose }: Props) => 
     metric !== 'total' || period !== 'all' || sortDir !== 'desc' || nameQuery.trim() !== ''
 
   return (
-    <div className={[styles.topBar, board.topBarFixed].join(' ')}>
-      {hasFilters && (
-        <div className={styles.cornerLeft}>
-          <button type="button" className={styles.clearBtn} onClick={clearFilters} aria-label="Temizle">
-            {'CLEAR'.split('').map((ch, i) => (
-              <span key={i}>{ch}</span>
-            ))}
-          </button>
-        </div>
-      )}
-
-      <div className={styles.filterStack}>
-        {/* 1. satır */}
-        <div className={styles.filterRow}>
-          <FilterField label="Sıralama">
-            <SelectControl value={metric} options={METRIC_OPTIONS}
-              onChange={(v) => setMetric(v as LeaderboardMetric)} />
-          </FilterField>
-          <FilterField label="Dönem">
-            <SelectControl value={period} options={PERIOD_OPTIONS}
-              onChange={(v) => setPeriod(v as LeaderboardPeriod)} />
-          </FilterField>
-        </div>
-
-        {/* 2. satır */}
-        <div className={styles.filterRow}>
-          <FilterField label="Yön">
-            <SelectControl value={sortDir} options={LB_DIR_OPTIONS}
-              onChange={(v) => setSortDir(v as 'asc' | 'desc')} />
-          </FilterField>
-          <FilterField label="Oyuncu">
-            <SearchControl value={nameQuery} placeholder="Search" onChange={setNameQuery} />
-          </FilterField>
-        </div>
+    <FilterBarShell
+      hasFilters={hasFilters}
+      onClear={clearFilters}
+      onRefresh={onRefresh}
+      onClose={onClose}
+      className={board.topBarFixed}
+    >
+      <div className={styles.filterRow}>
+        <FilterField label="Sıralama">
+          <SelectControl value={metric} options={METRIC_OPTIONS} onChange={(v) => setMetric(v as LeaderboardMetric)} />
+        </FilterField>
+        <FilterField label="Dönem">
+          <SelectControl value={period} options={PERIOD_OPTIONS} onChange={(v) => setPeriod(v as LeaderboardPeriod)} />
+        </FilterField>
       </div>
 
-      <div className={styles.cornerActions}>
-        <button type="button" className={[styles.iconBtn, styles.closeBtn].join(' ')} aria-label="Kapat" onClick={onClose}>
-          <CloseIcon />
-        </button>
-        <button type="button" className={styles.iconBtn} aria-label="Yenile" onClick={onRefresh}>
-          <RefreshIcon />
-        </button>
+      <div className={styles.filterRow}>
+        <FilterField label="Yön">
+          <SelectControl value={sortDir} options={LB_DIR_OPTIONS} onChange={(v) => setSortDir(v as 'asc' | 'desc')} />
+        </FilterField>
+        <FilterField label="Oyuncu">
+          <SearchControl value={nameQuery} placeholder="Search" onChange={setNameQuery} />
+        </FilterField>
       </div>
-    </div>
+    </FilterBarShell>
   )
 }

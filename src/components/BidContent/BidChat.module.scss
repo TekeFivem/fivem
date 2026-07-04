@@ -1,0 +1,291 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.panel {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    @include metallic-surface(160deg);
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.title {
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1c1f25;
+}
+
+.partToggle {
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+/* açılır katılımcı listesi */
+.participants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+
+    max-height: 96px;
+    /* ← uzayınca bu yükseklikten sonra scroll */
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* temalı scrollbar (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: #8f97a3 rgba(0, 0, 0, 0.25);
+}
+
+/* temalı scrollbar (WebKit) */
+.participants::-webkit-scrollbar {
+    width: 8px;
+}
+
+.participants::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.participants::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    background: linear-gradient(180deg, $metal-light 0%, $metal-mid 55%, $metal-dark 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.participants::-webkit-scrollbar-thumb:hover {
+    filter: brightness(1.1);
+}
+
+.partChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 11px;
+    color: #1c1f25;
+    background: linear-gradient(180deg, $metal-light, $metal-mid);
+}
+
+.partDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3fe06f;
+    box-shadow: 0 0 4px rgba(63, 224, 111, 0.7);
+}
+
+/* mesajlar — koyu ekran, kaydırılabilir */
+/* mesajlar — koyu ekran, dikey scroll, yatay taşma yok */
+.messages {
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* ← sağa taşma yok */
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-radius: 6px;
+    background: $screen-bg;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.5);
+
+    /* temalı scrollbar (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: #8f97a3 rgba(0, 0, 0, 0.35);
+}
+
+/* temalı scrollbar (WebKit/Chrome) */
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.messages::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    background: linear-gradient(180deg, $metal-light 0%, $metal-mid 55%, $metal-dark 100%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+    filter: brightness(1.1);
+}
+
+/* mesaj — uzun metin/kelime alt satıra kırılır, sağa taşmaz */
+.msg {
+     font-family: system-ui, -apple-system, 'Segoe UI',Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #c7ccd6;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    /* uzun kelime bile kırılır */
+    word-break: break-word;
+}
+
+.author {
+    color: #8f97a3;
+}
+
+.text {
+    color: #eef1f6;
+}
+
+/* seni etiketleyen mesaj daha belirgin */
+.msgMe {
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: rgba(243, 217, 121, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(243, 217, 121, 0.4);
+    border-left: 3px solid #f3d979;
+}
+
+/* @etiket */
+.mention {
+    color: #7fc6e0;
+    padding: 0 2px;
+    border-radius: 3px;
+    background: rgba(127, 198, 224, 0.15);
+}
+
+.mentionMe {
+    color: #2b2200;
+    background: #f3d979;
+    box-shadow: 0 0 6px rgba(243, 217, 121, 0.6);
+}
+
+.inputRow {
+    display: flex;
+    gap: 6px;
+}
+
+.input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.25);
+    color: #eef1f6;
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 12px;
+
+    &::placeholder {
+        color: #7f858f;
+    }
+}
+
+.sendBtn {
+    padding: 6px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    font-family: 'NoctrdripSolidmelt', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #14321c;
+    background: linear-gradient(180deg, #7fe6a0, #3f9d63);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+        filter: brightness(1.06);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+/* @ öneri kutusu — input'un üstünde açılır */
+.inputWrap { position: relative; }
+.suggest {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border-radius: 6px;
+  @include metallic-surface(160deg);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: #8f97a3 rgba(0, 0, 0, 0.25);
+}
+.suggest::-webkit-scrollbar { width: 8px; }
+.suggest::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.25); border-radius: 4px; }
+.suggest::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, $metal-light 0%, $metal-mid 55%, $metal-dark 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.suggestItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  color: #1c1f25;
+  background: linear-gradient(180deg, $metal-light, $metal-mid);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: filter 0.12s;
+  &:hover { filter: brightness(1.07); }
+}
