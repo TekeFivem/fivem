@@ -1,4 +1,6 @@
-import { fmtRange, type VaultSecurity } from '../../lib/vault'
+
+
+import { fmtRange, type VaultSecurity } from '../../lib/vault';
 import { MetalBadge } from '../MetalBadge/MetalBadge'
 import styles from './VaultStats.module.scss'
 

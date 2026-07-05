@@ -8,7 +8,7 @@ interface TabletState {
 }
 
 export const useTabletStore = create<TabletState>((set) => ({
-  isOpen: true, // geliştirme için açık; FiveM'de NUI mesajıyla yönetilir
+  isOpen: import.meta.env.DEV, // dev: açık · oyunda: kapalı (Lua setVisible ile açılır)
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
   toggle: () => set((s) => ({ isOpen: !s.isOpen })),

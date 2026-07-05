@@ -1,8 +1,5 @@
-import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
 import { useRecentFiltersStore } from '../../store/createFiltersStore'
 import { type AuctionItem } from '../../lib/auctions'
-import { useState } from 'react'
-import { BidContent } from '../../components/BidContent/BidContent'
 import { AuctionView } from '../../components/AuctionView/AuctionView'
 
 const MOCK: AuctionItem[] = [

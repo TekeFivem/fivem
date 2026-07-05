@@ -1,10 +1,6 @@
-import { useState } from 'react'
-import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
-
 import { useOngoingFiltersStore } from '../../store/createFiltersStore'
 import { useJoinedStore } from '../../store/joinedStore'
 import { ONGOING_TIME_OPTIONS, type AuctionItem } from '../../lib/auctions'
-import { BidContent } from '../../components/BidContent/BidContent'
 import { AuctionView } from '../../components/AuctionView/AuctionView'
 
 
