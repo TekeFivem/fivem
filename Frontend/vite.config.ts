@@ -4,11 +4,8 @@ import babel from '@rolldown/plugin-babel'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './', // NUI göreli yol
-  build: {
-    outDir: 'web/build',
-    emptyOutDir: true,
-  },
+  base: './',
+  build: { outDir: '../web/build', emptyOutDir: true },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] })
