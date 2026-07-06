@@ -32,4 +32,27 @@ RegisterNUICallback('getState', function(_, cb)
 end)
 
 -- (Geliştirme için) test komutu
-RegisterCommand('auctiontablet', function() openTablet() end, false)
+RegisterCommand('useTablet', function() openTablet() end, false)
+
+RegisterNUICallback('getAuctions', function(data, cb)
+  local list = (data and data.list) or 'ongoing'
+  cb(lib.callback.await('teke_auction:getAuctions', false, list) or {})
+end)
+
+-- Karar A: girişte bir kez abone
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function() TriggerServerEvent('teke_auction:subscribe') end)
+CreateThread(function() if LocalPlayer.state.isLoggedIn then TriggerServerEvent('teke_auction:subscribe') end end)
+
+-- NUI çağrıları
+RegisterNUICallback('getSnapshot', function(_, cb)
+  cb(lib.callback.await('teke_auction:getSnapshot', false) or {})
+end)
+RegisterNUICallback('getRecent', function(data, cb)
+  cb(lib.callback.await('teke_auction:getRecent', false, data) or { items = {}, total = 0 })
+end)
+
+-- Delta relay
+RegisterNetEvent('teke_auction:stats',   function(d) SendNUIMessage({ action='auctionStats',  data=d }) end)
+RegisterNetEvent('teke_auction:new',     function(d) SendNUIMessage({ action='auctionNew',    data=d }) end)
+RegisterNetEvent('teke_auction:started', function(d) SendNUIMessage({ action='auctionOpen',   data=d }) end)
+RegisterNetEvent('teke_auction:ended',   function(d) SendNUIMessage({ action='auctionEnded',  data=d }) end)

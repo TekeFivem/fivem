@@ -1,12 +1,11 @@
-Config = {}
+Config = Config or {}
 
 Config.Item = 'auction_tablet'      -- ox_inventory item adı
 Config.FinalPhaseSeconds = 10
-Config.Tiers = {
-  bronze = { minBid = 150 },
-  silver = { minBid = 300 },
-  gold   = { minBid = 600 },
-}
+Config.GoLiveSeconds = 2 * 3600        -- bitişe 2 saat kala upcoming → open
+Config.PageSize = 6                     -- recent sunucu sayfa boyu (grid 3×2)
+Config.Create = { everySeconds = 600, maxActive = 12, minDur = 3600, maxDur = 8 * 3600 }
+Config.Tiers = { bronze = { base = 1000 }, silver = { base = 5000 }, gold = { base = 15000 } }
 Config.Scratch = { cellCount = 6, baseCost = 250, growth = 1.6, pool = { 'phone', 'tv', 'laptop', 'watch' } }
 Config.Hack = {
   traceSteps = { 5, 10, 25, 45, 70, 100 },

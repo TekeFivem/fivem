@@ -16,14 +16,16 @@ client_scripts {
 
 server_scripts {
   '@oxmysql/lib/MySQL.lua',
+  'server/db.lua',
+  'server/auction.lua',
   'server/main.lua',
 }
 
-ui_page 'Frontend/web/build/index.html'
+ui_page 'web/build/index.html'
 
 files {
-  'Frontend/web/build/index.html',
-  'Frontend/web/build/**',
+  'web/build/index.html',
+  'web/build/**',
 }
 
 dependencies {

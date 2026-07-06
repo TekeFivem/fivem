@@ -26,10 +26,12 @@ export interface AuctionTabProps {
   searchByName?: boolean
   onAction?: (item: AuctionItem) => void
   onJoin?: (item: AuctionItem) => void
+  serverPaged?: boolean
+  serverTotalPages?: number
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,serverPaged,serverTotalPages,
   onAction, onJoin,
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
@@ -46,13 +48,17 @@ export const AuctionTab = ({
   }
 
   // --- SAF HESAP: hook yok ---
-  const { pageItems, totalPages, safePage } = queryAuctions(items, filters, {
-    timeUnitSeconds,
-    thresholdSec,
-    now,
-    deadlines: deadlines.current,
-    groupDecidedLast: variant === 'joined',
-  })
+  const { pageItems, totalPages, safePage } = serverPaged
+    ? {
+      pageItems: items,
+      totalPages: Math.max(1, serverTotalPages ?? 1),
+      safePage: Math.min(filters.page, Math.max(0, (serverTotalPages ?? 1) - 1)),
+    }
+    : queryAuctions(items, filters, {
+      timeUnitSeconds, thresholdSec, now,
+      deadlines: deadlines.current,
+      groupDecidedLast: variant === 'joined',
+    })
 
   return (
     <div className={styles.panel}>

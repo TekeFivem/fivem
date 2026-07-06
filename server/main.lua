@@ -1,18 +1,27 @@
--- ox_inventory: tablet item kullanımı
-exports('useTablet', function(event, item, inventory)
+-- ox_inventory tablet item
+exports('useTablet', function(event, _, inventory)
   if event ~= 'usingItem' then return end
   TriggerClientEvent('teke_auction:open', inventory.id)
 end)
 
--- Genel state (Faz 2'de auction listeleri de buradan gelecek)
-lib.callback.register('teke_auction:getState', function(source)
-  local player = exports.qbx_core:GetPlayer(source)
-  if not player then return {} end
-  local info = player.PlayerData.charinfo
-  return {
-    citizenid = player.PlayerData.citizenid,
-    name = ('%s %s'):format(info.firstname, info.lastname),
-    bank = player.PlayerData.money.bank,
-    cash = player.PlayerData.money.cash,
-  }
+-- Snapshot: sadece canlı listeler (ongoing + upcoming)
+lib.callback.register('teke_auction:getSnapshot', function()
+  return Db.GetSnapshot()
 end)
+
+-- Recent: sunucu-tarafı sayfalı
+lib.callback.register('teke_auction:getRecent', function(_, data)
+  return Db.GetRecentPage(data)
+end)
+
+-- Viewer sistemi (karar A: girişte abone, oyun boyu)
+local Viewers = {}
+RegisterNetEvent('teke_auction:subscribe',   function() Viewers[source] = true end)
+RegisterNetEvent('teke_auction:unsubscribe', function() Viewers[source] = nil end)
+AddEventHandler('playerDropped', function() Viewers[source] = nil end)
+
+function NotifyViewers(action, data)
+  for src in pairs(Viewers) do
+    TriggerClientEvent('teke_auction:' .. action, src, data)
+  end
+end
