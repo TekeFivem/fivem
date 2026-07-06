@@ -7,11 +7,8 @@ import type { AuctionItem } from '../lib/auctions'
 const MOCK = {
   ongoing: [
     { kind: 'storage', id: 's1', name: 'STR-12', tier: 'gold', endTime: '01:23:45', bid: 10000, participants: 7 },
-    { kind: 'itembox', id: 'i2', name: 'TMB-Y', tier: 'bronze', endTime: '00:00:15', bid: 750, participants: 1 },
   ] as AuctionItem[],
-  upcoming: [
-    { kind: 'container', id: 'uc1', name: 'CNT-C', tier: 'bronze', endTime: '07:15:00', bid: 9000, participants: 6 },
-  ] as AuctionItem[],
+  upcoming: [] as AuctionItem[],
 }
 
 export function useAuctionSync() {
@@ -27,6 +24,7 @@ export function useAuctionSync() {
     fetchNui('getSnapshot', {}, MOCK).then(setSnapshot).catch(() => {})
   }, [loaded, setSnapshot])
 
+  useNuiEvent('auctionSnapshot', setSnapshot) // abone olunca sunucu güncel snapshot push eder
   useNuiEvent('auctionStats', updateStats)
   useNuiEvent('auctionNew', addAuction)
   useNuiEvent('auctionOpen', openAuction)

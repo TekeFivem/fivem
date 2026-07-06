@@ -16,7 +16,11 @@ end)
 
 -- Viewer sistemi (karar A: girişte abone, oyun boyu)
 local Viewers = {}
-RegisterNetEvent('teke_auction:subscribe',   function() Viewers[source] = true end)
+RegisterNetEvent('teke_auction:subscribe', function()
+  local src = source
+  Viewers[src] = true
+  TriggerClientEvent('teke_auction:snapshot', src, Db.GetSnapshot())
+end)
 RegisterNetEvent('teke_auction:unsubscribe', function() Viewers[source] = nil end)
 AddEventHandler('playerDropped', function() Viewers[source] = nil end)
 

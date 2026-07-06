@@ -20,8 +20,14 @@ local function createRandom()
 end
 
 -- Admin komutu
-lib.addCommand('createauction', { help = 'Test auction' }, function()
-  createRandom()
+lib.addCommand('createauction', { help = 'Test auction' }, function(source)
+  print('[teke_auction] createauction çağrıldı, src=' .. tostring(source))
+  local ok, err = pcall(createRandom)
+  if ok then
+    print('[teke_auction] createRandom OK')
+  else
+    print('[teke_auction] createRandom HATA: ' .. tostring(err))
+  end
 end)
 
 -- Zamanlı otomatik üretim (ikisi birden)

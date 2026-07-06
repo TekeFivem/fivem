@@ -3,10 +3,11 @@ import { Sidebar } from './components/Sidebar/Sidebar'
 import { TabContent } from './components/TabContent/TabContent'
 import { useTabletVisibility } from './hooks/useTabletVisibility'
 import styles from './App.module.scss'
+import { useAuctionSync } from './hooks/useAuctiopnSync'
 
 function App() {
   useTabletVisibility()
-
+  useAuctionSync()
   return (
     <Tablet>
       <div className={styles.layout}>

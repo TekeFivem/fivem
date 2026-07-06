@@ -40,8 +40,15 @@ RegisterNUICallback('getAuctions', function(data, cb)
 end)
 
 -- Karar A: girişte bir kez abone
-AddEventHandler('QBCore:Client:OnPlayerLoaded', function() TriggerServerEvent('teke_auction:subscribe') end)
-CreateThread(function() if LocalPlayer.state.isLoggedIn then TriggerServerEvent('teke_auction:subscribe') end end)
+-- Karar A: girişte bir kez abone (Qbox event'i güvenli)
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function() TriggerServerEvent('teke_auction:subscribe') end)
+CreateThread(function()
+  Wait(1500)
+  if LocalPlayer.state.isLoggedIn then TriggerServerEvent('teke_auction:subscribe') end
+end)
+
+-- Sunucudan güncel snapshot push'u
+RegisterNetEvent('teke_auction:snapshot', function(d) SendNUIMessage({ action = 'auctionSnapshot', data = d }) end)
 
 -- NUI çağrıları
 RegisterNUICallback('getSnapshot', function(_, cb)
