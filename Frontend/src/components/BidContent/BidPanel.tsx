@@ -29,8 +29,15 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
 
   // açılışta son 5 bid
   useEffect(() => {
-    fetchNui<BidEntry[]>('getBids', { id: item.id }, []).then(setBids).catch(() => {})
+    fetchNui<BidEntry[]>('getBids', { id: item.id }, [])
+      .then(setBids)
+      .catch(() => {})
   }, [item.id])
+
+  // canlı fiyat: item.bid güncellenince senkronla
+  useEffect(() => {
+    setPrice(item.bid)
+  }, [item.bid])
 
   // canlı: başkalarının teklifleri
   useNuiEvent<{ id: string; entry: BidEntry }>('auctionBid', (d) => {
@@ -56,9 +63,13 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
       })
       .catch(() => {})
   }
+
   const submitCustom = () => {
     const amt = Math.round(Number(custom))
-    if (Number.isFinite(amt) && amt > 0) { placeBid(amt); setCustom('') }
+    if (Number.isFinite(amt) && amt > 0) {
+      placeBid(amt)
+      setCustom('')
+    }
   }
 
   const winner = useMemo(() => {
@@ -75,7 +86,9 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
       <div className={styles.priceBar}>
         <span className={styles.priceIcon}><BidIcon /></span>
         <span className={styles.priceLabel}>{priceLabel}</span>
-        <span className={styles.priceValue}><SevenSegment value={`${priceValue}$`} color="#f3d979" size={20} /></span>
+        <span className={styles.priceValue}>
+          <SevenSegment value={`${priceValue}$`} color="#f3d979" size={20} />
+        </span>
       </div>
 
       {phase === 'final' ? (
@@ -92,7 +105,9 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
           {bids.map((b) => (
             <li key={b.id} className={[styles.bidRow, b.hidden && styles.secret].filter(Boolean).join(' ')}>
               <span className={styles.player}>{label(b)}</span>
-              <span className={styles.amount}><SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} /></span>
+              <span className={styles.amount}>
+                <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
+              </span>
             </li>
           ))}
         </ul>
@@ -108,7 +123,13 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
         <>
           <div className={styles.presets}>
             {presets.map((amt) => (
-              <button key={amt} type="button" className={styles.preset} disabled={lockBids} onClick={() => placeBid(amt)}>
+              <button
+                key={amt}
+                type="button"
+                className={styles.preset}
+                disabled={lockBids}
+                onClick={() => placeBid(amt)}
+              >
                 +{amt}$
               </button>
             ))}
@@ -124,7 +145,14 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               onChange={(e) => setCustom(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
             />
-            <button type="button" className={styles.customBtn} disabled={lockBids} onClick={submitCustom}>Bid Ver</button>
+            <button
+              type="button"
+              className={styles.customBtn}
+              disabled={lockBids}
+              onClick={submitCustom}
+            >
+              Bid Ver
+            </button>
           </div>
           <button
             type="button"

@@ -75,3 +75,5 @@ RegisterNUICallback('getBids', function(data, cb)
   cb(lib.callback.await('teke_auction:getBids', false, data) or {})
 end)
 RegisterNetEvent('teke_auction:auctionBid', function(d) SendNUIMessage({ action = 'auctionBid', data = d }) end)
+
+RegisterNetEvent('teke_auction:won', function(d) SendNUIMessage({ action = 'auctionWon', data = d }) end)

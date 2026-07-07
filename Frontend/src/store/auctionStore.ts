@@ -8,7 +8,7 @@ interface AuctionState {
   ongoing: AuctionItem[]
   upcoming: AuctionItem[]
   setSnapshot: (s: { ongoing: AuctionItem[]; upcoming: AuctionItem[] }) => void
-  updateStats: (p: { id: string; bid?: number; participants?: number }) => void
+  updateStats: (p: { id: string; bid?: number; participants?: number; endTime?: string }) => void
   addAuction: (p: { list: ListKey; item: AuctionItem }) => void
   openAuction: (p: { id: string }) => void
   endAuction: (p: { id: string }) => void
@@ -24,16 +24,21 @@ export const useAuctionStore = create<AuctionState>((set) => ({
 
   setSnapshot: (s) => set({ ongoing: s.ongoing, upcoming: s.upcoming, loaded: true }),
 
-  updateStats: ({ id, bid, participants }) =>
+  updateStats: ({ id, bid, participants, endTime }) =>
     set((st) => {
       const p: Partial<AuctionItem> = {}
       if (bid !== undefined) p.bid = bid
       if (participants !== undefined) p.participants = participants
+      if (endTime !== undefined) p.endTime = endTime   // ✅ endTime senkronizasyonu
       return { ongoing: patch(st.ongoing, id, p), upcoming: patch(st.upcoming, id, p) }
     }),
 
   addAuction: ({ list, item }) =>
-    set((st) => (st[list].some((a) => a.id === item.id) ? {} : ({ [list]: [item, ...st[list]] } as Partial<AuctionState>))),
+    set((st) =>
+      st[list].some((a) => a.id === item.id)
+        ? {}
+        : ({ [list]: [item, ...st[list]] } as Partial<AuctionState>)
+    ),
 
   openAuction: ({ id }) =>
     set((st) => {

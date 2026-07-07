@@ -56,6 +56,11 @@ CreateThread(function()
 for _, r in ipairs(done or {}) do
   local res = Db.SettleAuction(r.id)
   NotifyViewers('ended', { id = tostring(r.id), winner = res.winner, paid = res.paid })
-end
+  -- kazanan online insansa: VICTORY sinyali (bot ise winnerCid 'BOT_..' → nil döner, atlanır)
+  if res.winnerCid then
+    local wp = exports.qbx_core:GetPlayerByCitizenId(res.winnerCid)
+    if wp then TriggerClientEvent('teke_auction:won', wp.PlayerData.source, { id = tostring(r.id) }) end
   end
-end)
+end
+  end  
+end)  

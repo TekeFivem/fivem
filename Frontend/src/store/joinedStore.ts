@@ -6,7 +6,8 @@ const MAX_JOINED = 20
 interface JoinedState {
   items: AuctionItem[]
   join: (item: AuctionItem) => void
-  updateStats: (p: { id: string; bid?: number; participants?: number }) => void
+  updateStats: (p: { id: string; bid?: number; participants?: number; endTime?: string }) => void
+  finish: (p: { id: string; winner?: string; paid?: number }) => void
   setResult: (id: string, result: 'won' | 'lost') => void
   clear: () => void
 }
@@ -21,19 +22,34 @@ export const useJoinedStore = create<JoinedState>((set) => ({
     }),
 
   // canlı bid / participant güncellemesi (auctionStats delta'sı)
-  updateStats: ({ id, bid, participants }) =>
+  updateStats: ({ id, bid, participants, endTime }) =>
     set((s) => ({
       items: s.items.map((x) =>
         x.id === id
           ? {
-              ...x,
-              ...(bid !== undefined ? { bid } : {}),
-              ...(participants !== undefined ? { participants } : {}),
-            }
+            ...x,
+            ...(bid !== undefined ? { bid } : {}),
+            ...(participants !== undefined ? { participants } : {}),
+            ...(endTime !== undefined ? { endTime } : {}),
+          }
           : x,
       ),
     })),
-
+  finish: ({ id, winner, paid }) =>
+    set((s) => ({
+      items: s.items.map((x) =>
+        x.id === id
+          ? {
+            ...x,
+            winner,
+            paid,
+            endTime: '00:00:00',
+            result: x.result ?? 'lost', // kazandıysa 'won' event'i ezecek
+            decidedAt: Date.now(),
+          }
+          : x,
+      ),
+    })),
   setResult: (id, result) =>
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? { ...x, result, decidedAt: Date.now() } : x)),

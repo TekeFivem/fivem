@@ -16,18 +16,25 @@ interface Props {
   mode?: 'live' | 'history'
   onBack?: () => void
 }
-
 export const BidContent = ({ item, mode = 'live', onBack }: Props) => {
-  const [secondsLeft, setSecondsLeft] = useState(() => toSeconds(item.endTime))
+  // winner/result set edildiyse (settle olduysa) auction bitmiştir → canlı sayma, bid alma
+  const decided = mode === 'history' || !!item.winner || item.result != null
+  const [secondsLeft, setSecondsLeft] = useState(() => (decided ? 0 : toSeconds(item.endTime)))
 
   useEffect(() => {
-    if (mode === 'history') return
+    if (decided) { setSecondsLeft(0); return }
     const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000)
     return () => clearInterval(id)
-  }, [mode])
+  }, [decided])
+
+  // süre sunucudan değişince (simfast) yeniden senkronla — bitmişse dokunma
+  useEffect(() => {
+    if (decided) return
+    setSecondsLeft(toSeconds(item.endTime))
+  }, [item.endTime, decided])
 
   const phase: 'open' | 'final' | 'ended' =
-    mode === 'history' || secondsLeft <= 0 ? 'ended' : secondsLeft <= 10 ? 'final' : 'open'
+    decided || secondsLeft <= 0 ? 'ended' : secondsLeft <= 10 ? 'final' : 'open'
   const remaining = formatHMS(secondsLeft)
 
   return (

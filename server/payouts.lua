@@ -14,7 +14,8 @@ function Payouts.nameOf(cid)
 end
 
 function Payouts.refund(cid, amount, reason)
-  if not amount or amount <= 0 then return end
+  amount = tonumber(amount) or 0           
+  if amount <= 0 then return end
   local p = exports.qbx_core:GetPlayerByCitizenId(cid)
   if p then
     p.Functions.AddMoney('bank', amount, reason or 'auction-refund')
@@ -26,8 +27,8 @@ end
 -- girişte bekleyen iadeleri öde
 local function flush(src, cid)
   local rows = MySQL.query.await("SELECT SUM(amount) AS total FROM pending_payouts WHERE citizenid = ?", { cid })
-  local total = rows and rows[1] and rows[1].total
-  if not total or total <= 0 then return end
+  local total = tonumber(rows and rows[1] and rows[1].total) or 0   -- ✅
+  if total <= 0 then return end
   local p = exports.qbx_core:GetPlayer(src)
   if not p then return end
   p.Functions.AddMoney('bank', total, 'auction-refund')

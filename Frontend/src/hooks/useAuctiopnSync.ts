@@ -19,7 +19,10 @@ export function useAuctionSync() {
   const addAuction = useAuctionStore((s) => s.addAuction)
   const openAuction = useAuctionStore((s) => s.openAuction)
   const endAuction = useAuctionStore((s) => s.endAuction)
+
   const joinedUpdateStats = useJoinedStore((s) => s.updateStats)
+  const joinedFinish = useJoinedStore((s) => s.finish)
+  const joinedSetResult = useJoinedStore((s) => s.setResult)
 
   useEffect(() => {
     if (loaded) return
@@ -27,11 +30,19 @@ export function useAuctionSync() {
   }, [loaded, setSnapshot])
 
   useNuiEvent('auctionSnapshot', setSnapshot)
+
   useNuiEvent<{ id: string; bid?: number; participants?: number }>('auctionStats', (d) => {
     updateStats(d)        // ongoing/upcoming
     joinedUpdateStats(d)  // joined
   })
+
   useNuiEvent('auctionNew', addAuction)
   useNuiEvent('auctionOpen', openAuction)
-  useNuiEvent('auctionEnded', endAuction)
+
+  useNuiEvent<{ id: string; winner?: string; paid?: number }>('auctionEnded', (d) => {
+    endAuction(d)     // ongoing’den çıkar
+    joinedFinish(d)   // joined item’ı sonuçlandır
+  })
+
+  useNuiEvent<{ id: string }>('auctionWon', (d) => joinedSetResult(d.id, 'won'))
 }

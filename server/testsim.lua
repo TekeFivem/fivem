@@ -102,6 +102,8 @@ lib.addCommand('simfast', { help = 'Bitişe X sn kala', params = {
 } }, function(_, args)
   local sec = args.sec or 15
   MySQL.update.await("UPDATE auctions SET end_time = ? WHERE id = ?", { os.time() + sec, args.id })
+  local item = Db.GetOne(args.id)
+  if item then NotifyViewers('stats', { id = tostring(args.id), endTime = item.endTime }) end  -- ✅ canlı ilet
   print(('[sim] #%d bitişe %d sn'):format(args.id, sec))
 end)
 
