@@ -96,14 +96,65 @@ function Db.CreateAuction(d)
   local now = os.time()
   local endTime = now + (d.duration or 3600)
   local status = (endTime - now > Config.GoLiveSeconds) and 'upcoming' or 'open'
+  local contents = json.encode(Db.GenerateContents(d.kind, d.tier))
   local id = MySQL.insert.await([[
-    INSERT INTO auctions (kind, name, tier, base_bid, current_price, start_time, end_time, status)
-    VALUES (?, ?, ?, ?, 0, ?, ?, ?)
-  ]], { d.kind, d.name, d.tier, d.base_bid, now, endTime, status })
+    INSERT INTO auctions (kind, name, tier, base_bid, current_price, start_time, end_time, status, contents_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ]], { d.kind, d.name, d.tier, d.base_bid, d.base_bid, now, endTime, status, contents })
   return id, status
 end
 
 function Db.CountActive()
   local r = MySQL.query.await("SELECT COUNT(*) AS c FROM auctions WHERE status IN ('upcoming','open','final')")
   return (r and r[1] and r[1].c) or 0
+end
+
+
+function Db.GenerateContents(kind, tier)
+  local pool = (Config.Loot[kind] or {})[tier]
+  if not pool then return {} end
+  local out = {}
+  for _, e in ipairs(pool) do
+    out[#out+1] = { item = e.item, count = math.random(e.min, e.max) }
+  end
+  return out
+end
+
+function Db.SettleAuction(id)
+  local a = MySQL.query.await("SELECT kind, tier, contents_json FROM auctions WHERE id = ?", { id })
+  local info = a and a[1]
+
+  -- oyuncu bazında toplam harcama (en çok harcayan kazanır; eşitlik → son bid)
+  local rows = MySQL.query.await([[
+    SELECT citizenid, SUM(amount) AS total, MAX(id) AS last_bid
+    FROM auction_bids WHERE auction_id = ?
+    GROUP BY citizenid ORDER BY total DESC, last_bid DESC
+  ]], { id })
+
+  local winnerCid, winnerTotal, winnerName
+  if rows and rows[1] then
+    winnerCid, winnerTotal = rows[1].citizenid, rows[1].total
+    winnerName = Payouts.nameOf(winnerCid)
+  end
+
+  -- KAZANAN HARİÇ herkese iade (bitişte)
+  for _, r in ipairs(rows or {}) do
+    if r.citizenid ~= winnerCid then
+      Payouts.refund(r.citizenid, r.total, 'auction-refund')
+    end
+  end
+
+  -- Kazanan: ödül kutusu Vault'una
+  if winnerCid and info then
+    MySQL.insert.await([[
+      INSERT INTO vault_boxes (owner_id, kind, tier, est_value, security, end_time, contents_json)
+      VALUES (?, ?, ?, ?, 'unprotected', ?, ?)
+    ]], { winnerCid, info.kind, info.tier, winnerTotal, os.time() + 24 * 3600, info.contents_json })
+  end
+
+  MySQL.update.await([[
+    UPDATE auctions SET status='ended', winner_id=?, winner_name=?, paid=?, contents_json=NULL WHERE id=?
+  ]], { winnerCid, winnerName, winnerTotal, id })
+
+  return { winner = winnerName, paid = winnerTotal }
 end

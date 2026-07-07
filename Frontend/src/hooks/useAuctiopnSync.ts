@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { fetchNui } from '../lib/fetchNui'
 import { useNuiEvent } from './useNuiEvent'
 import { useAuctionStore } from '../store/auctionStore'
+import { useJoinedStore } from '../store/joinedStore'
 import type { AuctionItem } from '../lib/auctions'
 
 const MOCK = {
@@ -18,14 +19,18 @@ export function useAuctionSync() {
   const addAuction = useAuctionStore((s) => s.addAuction)
   const openAuction = useAuctionStore((s) => s.openAuction)
   const endAuction = useAuctionStore((s) => s.endAuction)
+  const joinedUpdateStats = useJoinedStore((s) => s.updateStats)
 
   useEffect(() => {
     if (loaded) return
     fetchNui('getSnapshot', {}, MOCK).then(setSnapshot).catch(() => {})
   }, [loaded, setSnapshot])
 
-  useNuiEvent('auctionSnapshot', setSnapshot) // abone olunca sunucu güncel snapshot push eder
-  useNuiEvent('auctionStats', updateStats)
+  useNuiEvent('auctionSnapshot', setSnapshot)
+  useNuiEvent<{ id: string; bid?: number; participants?: number }>('auctionStats', (d) => {
+    updateStats(d)        // ongoing/upcoming
+    joinedUpdateStats(d)  // joined
+  })
   useNuiEvent('auctionNew', addAuction)
   useNuiEvent('auctionOpen', openAuction)
   useNuiEvent('auctionEnded', endAuction)

@@ -12,6 +12,7 @@ import type { AuctionItem, Variant } from '../../lib/auctions'
 import type { FiltersStore } from '../../store/createFiltersStore'
 import type { SelectOption } from '../SelectControl/SelectControl'
 import styles from './AuctionTab.module.scss'
+import { fetchNui } from '../../lib/fetchNui'
 
 const CARD = { storage: SelfStorage, container: Container, itembox: ItemBox } as const
 
@@ -31,7 +32,7 @@ export interface AuctionTabProps {
 }
 
 export const AuctionTab = ({
-  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName,serverPaged,serverTotalPages,
+  items, store, variant, timeOptions, timeUnitSeconds, thresholdSec, labels, searchByName, serverPaged, serverTotalPages,
   onAction, onJoin,
 }: AuctionTabProps) => {
   // --- HOOK'LAR: her render'da aynı sırada, koşulsuz ---
@@ -87,7 +88,20 @@ export const AuctionTab = ({
                 paid={item.paid}
                 result={item.result}
                 onInspect={() => onJoin?.(item)}
-                onJoin={() => { join(item); onJoin?.(item) }}
+                onJoin={() => {
+                  fetchNui<{ ok?: boolean; participants?: number }>(
+                    'joinAuction',
+                    { id: item.id },
+                    { ok: true, participants: item.participants + 1 }, // dev fallback
+                  )
+                    .then((res) => {
+                      if (!res || res.ok === false) return
+                      const joinedItem = { ...item, participants: res.participants ?? item.participants }
+                      join(joinedItem)
+                      onJoin?.(joinedItem)
+                    })
+                    .catch(() => { })
+                }}
                 onBid={() => onJoin?.(item)}
                 onRemind={(active) => console.log('remind', item.id, active)}
                 onWaypoint={(active) => console.log('waypoint', item.id, active)}

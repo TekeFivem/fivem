@@ -17,10 +17,11 @@ client_scripts {
 server_scripts {
   '@oxmysql/lib/MySQL.lua',
   'server/db.lua',
+  'server/payouts.lua',
+  'server/testsim.lua',
   'server/auction.lua',
   'server/main.lua',
 }
-
 ui_page 'web/build/index.html'
 
 files {

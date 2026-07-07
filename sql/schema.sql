@@ -68,3 +68,15 @@ CREATE TABLE IF NOT EXISTS auction_chat (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX (auction_id)
 );
+
+ALTER TABLE auctions ADD COLUMN winner_name VARCHAR(64) NULL AFTER winner_id;
+CREATE INDEX idx_status_end ON auctions (status, end_time);
+
+CREATE TABLE IF NOT EXISTS pending_payouts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  citizenid VARCHAR(64) NOT NULL,
+  amount INT NOT NULL,
+  reason VARCHAR(64),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (citizenid)
+);

@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { AuctionItem, Tier } from '../../lib/auctions'
 import { SevenSegment } from '../SevenSegment/SevenSegment'
 import { BidIcon } from '../icons'
+import { fetchNui } from '../../lib/fetchNui'
+import { useNuiEvent } from '../../hooks/useNuiEvent'
 import styles from './BidPanel.module.scss'
 
 interface BidEntry { id: string; player: string; amount: number; hidden: boolean }
@@ -11,14 +13,6 @@ const presetsFor = (tier: Tier) => [1, 2, 4, 8].map((m) => MIN_BID[tier] * m)
 const money = (n: number) => `$${n.toLocaleString('en-US')}`
 const label = (b: BidEntry) => (b.hidden ? 'Gizli Teklif' : b.player)
 
-const SEED_BIDS: BidEntry[] = [
-  { id: 'b1', player: 'Mike_T', amount: 600, hidden: false },
-  { id: 'b2', player: 'Cem',    amount: 300, hidden: true },
-  { id: 'b3', player: 'Aria',   amount: 150, hidden: false },
-  { id: 'b4', player: 'Berkay', amount: 300, hidden: false },
-  { id: 'b5', player: 'Deniz',  amount: 150, hidden: true },
-]
-
 interface Props {
   item: AuctionItem
   phase?: 'open' | 'final' | 'ended'
@@ -27,22 +21,40 @@ interface Props {
 export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const tier: Tier = item.tier ?? 'bronze'
   const presets = useMemo(() => presetsFor(tier), [tier])
-  const [bids, setBids] = useState<BidEntry[]>(SEED_BIDS)
+  const [bids, setBids] = useState<BidEntry[]>([])
   const [price, setPrice] = useState(item.bid)
   const [hidden, setHidden] = useState(false)
   const [custom, setCustom] = useState('')
   const [finalBidUsed, setFinalBidUsed] = useState(false)
 
-  // final fazda tek teklif → verildikten sonra kilit
+  // açılışta son 5 bid
+  useEffect(() => {
+    fetchNui<BidEntry[]>('getBids', { id: item.id }, []).then(setBids).catch(() => {})
+  }, [item.id])
+
+  // canlı: başkalarının teklifleri
+  useNuiEvent<{ id: string; entry: BidEntry }>('auctionBid', (d) => {
+    if (d.id !== item.id) return
+    setBids((prev) => [d.entry, ...prev].slice(0, 5))
+  })
+
   const lockBids = phase === 'final' && finalBidUsed
 
   const placeBid = (amount: number) => {
     if (!amount || amount <= 0 || phase === 'ended') return
     if (phase === 'final' && finalBidUsed) return
-    setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount, hidden }, ...prev].slice(0, 5))
-    setPrice((p) => p + amount)
-    if (phase === 'final') setFinalBidUsed(true)
-    // TODO: FiveM → fetchNui('placeBid', { auctionId: item.id, amount, hidden, blind: phase === 'final' })
+    fetchNui<{ ok?: boolean; price?: number }>(
+      'placeBid',
+      { id: item.id, amount, hidden },
+      { ok: true, price: price + amount },
+    )
+      .then((res) => {
+        if (!res || res.ok === false) return
+        setPrice(res.price ?? price + amount)
+        setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount, hidden }, ...prev].slice(0, 5))
+        if (phase === 'final') setFinalBidUsed(true)
+      })
+      .catch(() => {})
   }
   const submitCustom = () => {
     const amt = Math.round(Number(custom))
@@ -101,7 +113,6 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               </button>
             ))}
           </div>
-
           <div className={styles.customRow}>
             <input
               className={styles.customInput}
@@ -115,8 +126,6 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
             />
             <button type="button" className={styles.customBtn} disabled={lockBids} onClick={submitCustom}>Bid Ver</button>
           </div>
-
-          {/* Gizli Bid — koşulsuz (zaten ended değiliz) → open + final'de görünür */}
           <button
             type="button"
             className={[styles.secretPlate, hidden && styles.secretOn].filter(Boolean).join(' ')}

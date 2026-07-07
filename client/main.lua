@@ -63,3 +63,15 @@ RegisterNetEvent('teke_auction:stats',   function(d) SendNUIMessage({ action='au
 RegisterNetEvent('teke_auction:new',     function(d) SendNUIMessage({ action='auctionNew',    data=d }) end)
 RegisterNetEvent('teke_auction:started', function(d) SendNUIMessage({ action='auctionOpen',   data=d }) end)
 RegisterNetEvent('teke_auction:ended',   function(d) SendNUIMessage({ action='auctionEnded',  data=d }) end)
+
+RegisterNUICallback('joinAuction', function(data, cb)
+  cb(lib.callback.await('teke_auction:joinAuction', false, data))
+end)
+
+RegisterNUICallback('placeBid', function(data, cb)
+  cb(lib.callback.await('teke_auction:placeBid', false, data))
+end)
+RegisterNUICallback('getBids', function(data, cb)
+  cb(lib.callback.await('teke_auction:getBids', false, data) or {})
+end)
+RegisterNetEvent('teke_auction:auctionBid', function(d) SendNUIMessage({ action = 'auctionBid', data = d }) end)

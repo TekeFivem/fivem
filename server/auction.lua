@@ -51,12 +51,11 @@ CreateThread(function()
       NotifyViewers('started', { id = tostring(r.id) })
     end
 
-    local done = MySQL.query.await(
-      "SELECT id FROM auctions WHERE status IN ('open','final') AND end_time <= ?", { now })
-    for _, r in ipairs(done or {}) do
-      -- Faz 3'te kazanan hesaplanacak (şimdilik null)
-      MySQL.update.await("UPDATE auctions SET status='ended' WHERE id=?", { r.id })
-      NotifyViewers('ended', { id = tostring(r.id) })
-    end
+   local done = MySQL.query.await(
+  "SELECT id FROM auctions WHERE status IN ('open','final') AND end_time <= ?", { now })
+for _, r in ipairs(done or {}) do
+  local res = Db.SettleAuction(r.id)
+  NotifyViewers('ended', { id = tostring(r.id), winner = res.winner, paid = res.paid })
+end
   end
 end)
