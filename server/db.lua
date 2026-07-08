@@ -133,9 +133,9 @@ function Db.GenerateContents(kind, tier)
 end
 
 function Db.SettleAuction(id)
-  local a = MySQL.query.await(
-    "SELECT kind, tier, contents_json, current_price, base_bid, loc_x, loc_y, loc_z FROM auctions WHERE id = ?", { id })
-  local info = a and a[1]
+local a = MySQL.query.await(
+  "SELECT kind, name, tier, contents_json, current_price, base_bid, loc_x, loc_y, loc_z FROM auctions WHERE id = ?", { id })
+local info = a and a[1]
 
   -- satış fiyatı = son güncel fiyat
   local finalPrice = info
@@ -174,15 +174,15 @@ function Db.SettleAuction(id)
   end
 
   -- Kazanan: ödül kutusu (konum da kopyalanıyor)
-  if winnerCid and info then
-    MySQL.insert.await([[
-      INSERT INTO vault_boxes (owner_id, kind, tier, est_value, security, end_time, contents_json, loc_x, loc_y, loc_z)
-      VALUES (?, ?, ?, ?, 'unprotected', ?, ?, ?, ?, ?)
-    ]], {
-      winnerCid, info.kind, info.tier, finalPrice, os.time() + 24 * 3600, info.contents_json,
-      info.loc_x, info.loc_y, info.loc_z,
-    })
-  end
+if winnerCid and info then
+  MySQL.insert.await([[
+    INSERT INTO vault_boxes (owner_id, name, kind, tier, est_value, security, end_time, contents_json, loc_x, loc_y, loc_z)
+    VALUES (?, ?, ?, ?, ?, 'unprotected', ?, ?, ?, ?, ?)
+  ]], {
+    winnerCid, info.name, info.kind, info.tier, finalPrice, os.time() + 24 * 3600, info.contents_json,
+    info.loc_x, info.loc_y, info.loc_z,
+  })
+end
 
   MySQL.update.await([[
     UPDATE auctions SET status='ended', winner_id=?, winner_name=?, paid=?, contents_json=NULL WHERE id=?

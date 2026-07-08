@@ -30,10 +30,10 @@ lib.callback.register('teke_auction:getVault', function(source)
   if not player then return {} end
   local cid = player.PlayerData.citizenid
   local rows = MySQL.query.await([[
-    SELECT id, kind, tier, est_value, security, end_time, loc_x, loc_y, loc_z
-    FROM vault_boxes WHERE owner_id = ? AND opened = 0
-    ORDER BY end_time ASC
-  ]], { cid })
+  SELECT id, name, kind, tier, est_value, security, end_time, loc_x, loc_y, loc_z
+  FROM vault_boxes WHERE owner_id = ? AND opened = 0
+  ORDER BY end_time ASC
+]], { cid })
   local out = {}
   for _, r in ipairs(rows or {}) do
     local remaining = math.max(0, r.end_time - os.time())
@@ -41,7 +41,7 @@ lib.callback.register('teke_auction:getVault', function(source)
       id           = tostring(r.id),
       kind         = r.kind,
       tier         = r.tier,
-      name         = (PREFIX[r.kind] or 'BOX') .. '-' .. r.id,
+      name = r.name or ((PREFIX[r.kind] or 'BOX') .. '-' .. r.id),
       estValue     = r.est_value,
       bid          = r.est_value,
       security     = uiSecurity(r.security),
@@ -71,24 +71,30 @@ lib.callback.register('teke_auction:openBox', function(source, data)
   if not row then return { ok = false, reason = 'notfound' } end
   if row.end_time <= os.time() then return { ok = false, reason = 'expired' } end
 
-  -- konum kontrolü (client mesafesine GÜVENME) — kutunun KENDİ noktasına
+  -- konum kontrolü
   if not nearBox(src, boxLocation(row)) then return { ok = false, reason = 'toofar' } end
 
   local sid = stashId(boxId)
 
-  -- stash'i kaydet (idempotent, owner = cid)
   exports.ox_inventory:RegisterStash(
     sid, ('Kutu #%s'):format(boxId), Config.Vault.stashSlots, Config.Vault.stashWeight, cid)
 
-  -- ilk açılışta bir kez doldur (duplicate exploit'i önle: seeded'ı şartlı güncelle)
+  -- ilk açılışta doldur
   if row.seeded == 0 then
     local upd = MySQL.update.await(
       'UPDATE vault_boxes SET seeded = 1 WHERE id = ? AND seeded = 0', { boxId })
+    print('[vault] box #' .. boxId .. ' seed update result = ' .. tostring(upd))
+
     if upd and upd > 0 then
       local contents = row.contents_json and json.decode(row.contents_json) or {}
+      print('[vault] box #' .. boxId .. ' contents count = ' .. #contents)
+
       for _, it in ipairs(contents) do
         local item  = it.item or it.name
         local count = tonumber(it.count or it.amount) or 1
+        local meta  = it.metadata and json.encode(it.metadata) or '{}'
+        print(string.format('[vault]   + %s x%d meta=%s', tostring(item), count, meta))
+
         if item and count > 0 then
           exports.ox_inventory:AddItem(sid, item, count, it.metadata)
         end
@@ -96,10 +102,10 @@ lib.callback.register('teke_auction:openBox', function(source, data)
     end
   end
 
-  -- oyuncuya stash'i aç
   exports.ox_inventory:forceOpenInventory(src, 'stash', sid)
   return { ok = true }
 end)
+
 
 -- Stash boşaldıysa kutuyu kapat/temizle
 local function finalizeIfEmpty(boxId)
