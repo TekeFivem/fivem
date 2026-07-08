@@ -59,6 +59,7 @@ export const AuctionTab = ({
       timeUnitSeconds, thresholdSec, now,
       deadlines: deadlines.current,
       groupDecidedLast: variant === 'joined',
+      groupCleanedLast: variant === 'vault',
     })
 
   return (
@@ -88,6 +89,7 @@ export const AuctionTab = ({
                 paid={item.paid}
                 result={item.result}
                 onInspect={() => onJoin?.(item)}
+                cleaned={item.cleaned}
                 onJoin={() => {
                   fetchNui<{ ok?: boolean; participants?: number }>(
                     'joinAuction',

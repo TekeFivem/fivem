@@ -14,12 +14,15 @@ export const VaultTab = () => {
 
   // sunucudan vault kutularını yükle (dev'de boş dizi mock)
   const load = () =>
-    fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => {})
+    fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => { })
   useEffect(() => { load() }, [])
 
   // kutu tamamen boşaldığında sunucu haber verir → listeden çıkar
+  // kutu boşaldığında sunucu haber verir → listeden ÇIKARMA, clean maske ile bırak
   useNuiEvent<{ id: string }>('vaultBoxOpened', ({ id }) =>
-    setItems((prev) => prev.filter((i) => i.id !== id)),
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, cleaned: true, endTime: '00:00:00' } : i)),
+    ),
   )
 
   const handleAction = (id: string, action: VaultAction) => {
@@ -36,7 +39,7 @@ export const VaultTab = () => {
               console.warn('openBox reddedildi:', res?.reason)
             }
           })
-          .catch(() => {})
+          .catch(() => { })
         break
       }
       // Sonraki fazlar (satış / sigorta / güvenlik / uzatma):

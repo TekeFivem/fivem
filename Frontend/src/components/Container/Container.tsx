@@ -9,19 +9,22 @@ export const Container = ({
   name, tier = 'bronze', endTime, bid, participants,
   onJoin, onWaypoint, onRemind, variant = 'ongoing',
   winner, paid, result, onInspect, onBid,
-  estValue, security, onAction, bare,
+  estValue, security, onAction, bare,cleaned
 }: AuctionCardProps) => {
   const c = useAuctionCard({ endTime, onWaypoint, onRemind })
   const recent = variant === 'recent' || (variant === 'joined' && !!result)
-  const vault = variant === 'vault'
-  const expired = vault && c.remaining === '00:00:00'
-  const maskKind: MaskKind | null = expired
-    ? 'expired'
-    : variant === 'joined' && result
-      ? result === 'won'
-        ? 'victory'
-        : 'defeat'
-      : null
+const vault = variant === 'vault'
+const isCleaned = vault && !!cleaned
+const expired = vault && !isCleaned && c.remaining === '00:00:00'
+const maskKind: MaskKind | null = isCleaned
+  ? 'cleaned'
+  : expired
+  ? 'expired'
+  : variant === 'joined' && result
+  ? result === 'won'
+    ? 'victory'
+    : 'defeat'
+  : null
   return (
     <div className={[styles.unit, styles[tier]].join(' ')}>
       <div className={styles.railTop} />

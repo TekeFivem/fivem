@@ -22,7 +22,7 @@ Config.Loot = {
     },
     silver = {
       { item = 'phone', min = 1, max = 1 },
-      { item = 'medkit', min = 1, max = 2 }
+      { item = 'goldbar', min = 1, max = 2 }
     },
     gold = {
       { item = 'goldbar', min = 1, max = 2 },

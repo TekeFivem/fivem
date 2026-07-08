@@ -9,6 +9,7 @@ interface QueryOpts {
   now: number
   deadlines: Map<string, number>
   groupDecidedLast?: boolean
+  groupCleanedLast?: boolean
 }
 
 export const queryAuctions = (items: AuctionItem[], f: FiltersState, opts: QueryOpts) => {
@@ -64,6 +65,12 @@ export const queryAuctions = (items: AuctionItem[], f: FiltersState, opts: Query
   }
 
   const sorted = [...filtered].sort((a, b) => {
+    if (opts.groupCleanedLast) {
+      const aClean = !!a.cleaned
+      const bClean = !!b.cleaned
+      if (aClean !== bClean) return aClean ? 1 : -1 // temizlenenler sona
+      return activeSort(a, b)
+    }
     if (opts.groupDecidedLast) {
       const aDecided = a.result != null
       const bDecided = b.result != null

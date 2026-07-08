@@ -1,11 +1,12 @@
 import styles from './CardMask.module.scss'
 
-export type MaskKind = 'victory' | 'defeat' | 'expired'
+export type MaskKind = 'victory' | 'defeat' | 'expired' | 'cleaned'
 
 const LABEL: Record<MaskKind, string> = {
   victory: 'VICTORY',
   defeat: 'DEFEAT',
   expired: 'EXPIRED',
+  cleaned: 'CLEANED',
 }
 
 // Kartın üstünü kaplar, tüm tıklamaları yakalar (butonlar kilitlenir),

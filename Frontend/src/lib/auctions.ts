@@ -21,6 +21,7 @@ export interface AuctionItem {
   estValue?: number       // vault: tahmini değer (alt-sol)
   security?: VaultSecurity // vault: güvenlik durumu (alt-sağ)
   deadline?:number
+  cleaned?:boolean
 }
 export interface AuctionCardProps {
   name: string
@@ -42,6 +43,7 @@ export interface AuctionCardProps {
   security?: VaultSecurity
   onAction?: () => void // vault: Action butonu (modal açacak)
   bare?:boolean
+  cleaned?:boolean
 }
 
 // "hh:mm:ss" -> saniye

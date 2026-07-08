@@ -34,24 +34,30 @@ lib.callback.register('teke_auction:getVault', function(source)
   local player = exports.qbx_core:GetPlayer(source)
   if not player then return {} end
   local cid = player.PlayerData.citizenid
+
   local rows = MySQL.query.await([[
-    SELECT id, name, kind, tier, est_value, security, end_time, loc_x, loc_y, loc_z
-    FROM vault_boxes WHERE owner_id = ? AND opened = 0
-    ORDER BY end_time ASC
+    SELECT id, name, kind, tier, est_value, security, end_time, opened, loc_x, loc_y, loc_z
+    FROM vault_boxes
+    WHERE owner_id = ?
+    ORDER BY opened ASC, end_time ASC
+    LIMIT 20
   ]], { cid })
+
   local out = {}
   for _, r in ipairs(rows or {}) do
+    local cleaned   = truthy(r.opened)                 -- TINYINT(1) → boolean güvenli
     local remaining = math.max(0, r.end_time - os.time())
     out[#out+1] = {
       id           = tostring(r.id),
       kind         = r.kind,
       tier         = r.tier,
-      name         = r.name or ((PREFIX[r.kind] or 'BOX') .. '-' .. r.id), -- isim korunur
+      name         = r.name or ((PREFIX[r.kind] or 'BOX') .. '-' .. r.id),
       estValue     = r.est_value,
       bid          = r.est_value,
       security     = uiSecurity(r.security),
-      endTime      = os.date('!%H:%M:%S', remaining),
+      endTime      = cleaned and '00:00:00' or os.date('!%H:%M:%S', remaining),
       participants = 0,
+      cleaned      = cleaned,                            -- ✅ clean maske + en sona sıralama
       loc          = (r.loc_x ~= nil) and { x = r.loc_x, y = r.loc_y, z = r.loc_z } or nil,
     }
   end
