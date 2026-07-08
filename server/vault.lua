@@ -22,6 +22,11 @@ local function uiSecurity(s)
   return (s == 'unprotected') and 'none' or s
 end
 
+-- TINYINT(1) oxmysql'de boolean dönebilir → 0/1, true/false, "0"/"1" hepsini güvenle çöz
+local function truthy(v)
+  return v == 1 or v == true or v == '1'
+end
+
 local PREFIX = { storage = 'STR', container = 'CNT', itembox = 'TMB' }
 
 -- Oyuncunun açılmamış kutuları
@@ -30,10 +35,10 @@ lib.callback.register('teke_auction:getVault', function(source)
   if not player then return {} end
   local cid = player.PlayerData.citizenid
   local rows = MySQL.query.await([[
-  SELECT id, name, kind, tier, est_value, security, end_time, loc_x, loc_y, loc_z
-  FROM vault_boxes WHERE owner_id = ? AND opened = 0
-  ORDER BY end_time ASC
-]], { cid })
+    SELECT id, name, kind, tier, est_value, security, end_time, loc_x, loc_y, loc_z
+    FROM vault_boxes WHERE owner_id = ? AND opened = 0
+    ORDER BY end_time ASC
+  ]], { cid })
   local out = {}
   for _, r in ipairs(rows or {}) do
     local remaining = math.max(0, r.end_time - os.time())
@@ -41,7 +46,7 @@ lib.callback.register('teke_auction:getVault', function(source)
       id           = tostring(r.id),
       kind         = r.kind,
       tier         = r.tier,
-      name = r.name or ((PREFIX[r.kind] or 'BOX') .. '-' .. r.id),
+      name         = r.name or ((PREFIX[r.kind] or 'BOX') .. '-' .. r.id), -- isim korunur
       estValue     = r.est_value,
       bid          = r.est_value,
       security     = uiSecurity(r.security),
@@ -55,6 +60,7 @@ end)
 
 -- Kutuyu stash olarak aç (lokasyon + sahiplik + tek-seferlik seed)
 lib.callback.register('teke_auction:openBox', function(source, data)
+  print('[vault] openBox ÇAĞRILDI id=', data and data.id) -- TEŞHİS (test sonrası kaldır)
   local src = source
   local player = exports.qbx_core:GetPlayer(src)
   if not player then return { ok = false, reason = 'noplayer' } end
@@ -71,30 +77,26 @@ lib.callback.register('teke_auction:openBox', function(source, data)
   if not row then return { ok = false, reason = 'notfound' } end
   if row.end_time <= os.time() then return { ok = false, reason = 'expired' } end
 
-  -- konum kontrolü
+  -- konum kontrolü (client mesafesine GÜVENME) — kutunun KENDİ noktasına
   if not nearBox(src, boxLocation(row)) then return { ok = false, reason = 'toofar' } end
 
   local sid = stashId(boxId)
 
+  -- stash'i kaydet (idempotent, owner = cid)
   exports.ox_inventory:RegisterStash(
     sid, ('Kutu #%s'):format(boxId), Config.Vault.stashSlots, Config.Vault.stashWeight, cid)
 
-  -- ilk açılışta doldur
-  if row.seeded == 0 then
+  -- ilk açılışta bir kez doldur (TINYINT(1) boolean dönebilir → truthy ile güvenli kontrol)
+  if not truthy(row.seeded) then
     local upd = MySQL.update.await(
       'UPDATE vault_boxes SET seeded = 1 WHERE id = ? AND seeded = 0', { boxId })
-    print('[vault] box #' .. boxId .. ' seed update result = ' .. tostring(upd))
-
     if upd and upd > 0 then
       local contents = row.contents_json and json.decode(row.contents_json) or {}
-      print('[vault] box #' .. boxId .. ' contents count = ' .. #contents)
-
+      print('[vault] box #' .. boxId .. ' contents count = ' .. #contents) -- TEŞHİS
       for _, it in ipairs(contents) do
         local item  = it.item or it.name
         local count = tonumber(it.count or it.amount) or 1
-        local meta  = it.metadata and json.encode(it.metadata) or '{}'
-        print(string.format('[vault]   + %s x%d meta=%s', tostring(item), count, meta))
-
+        print('[vault]   +', tostring(item), count) -- TEŞHİS
         if item and count > 0 then
           exports.ox_inventory:AddItem(sid, item, count, it.metadata)
         end
@@ -102,10 +104,10 @@ lib.callback.register('teke_auction:openBox', function(source, data)
     end
   end
 
+  -- oyuncuya stash'i aç
   exports.ox_inventory:forceOpenInventory(src, 'stash', sid)
   return { ok = true }
 end)
-
 
 -- Stash boşaldıysa kutuyu kapat/temizle
 local function finalizeIfEmpty(boxId)
@@ -125,7 +127,7 @@ local function finalizeIfEmpty(boxId)
   end
 end
 
--- ox_inventory stash kapanınca kontrol et (versiyona göre imza değişebilir; aşağıdaki not'a bak)
+-- ox_inventory stash kapanınca kontrol et (versiyona göre imza değişebilir)
 AddEventHandler('ox_inventory:closedInventory', function(playerId, inventoryId)
   if type(inventoryId) == 'string' then
     local boxId = inventoryId:match('^vault_(%d+)$')
@@ -134,7 +136,6 @@ AddEventHandler('ox_inventory:closedInventory', function(playerId, inventoryId)
 end)
 
 -- GÜVENLİK AĞI: seed edilmiş ama açık kalmış kutuları periyodik süpür
--- (event imzası farklı olsa bile kutu yine de kapanır)
 CreateThread(function()
   while true do
     Wait(60000)
