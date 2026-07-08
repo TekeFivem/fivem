@@ -20,6 +20,7 @@ export interface AuctionItem {
   decidedAt?: number // joined: sonucun belli olduğu an (sıralama için)
   estValue?: number       // vault: tahmini değer (alt-sol)
   security?: VaultSecurity // vault: güvenlik durumu (alt-sağ)
+  deadline?:number
 }
 export interface AuctionCardProps {
   name: string
