@@ -42,3 +42,24 @@ Config.Loot = {
     gold   = { { item = 'diamond',  min = 1, max = 3 } }
   },
 }
+
+-- ==== Faz B: Vault ayarları ====
+-- Türe göre kutu toplama noktaları. Otomatik üretimde bu havuzdan RASTGELE
+-- bir nokta seçilir; admin oluşturursa kendi konumunu kullanır
+Config.VaultSpots = {
+  storage = {
+    vec3(1234.5, -1234.5, 30.0), -- TODO: storage noktaları
+    -- vec3(...), vec3(...),
+  },
+  container = {
+    vec3(0.0, 0.0, 0.0),         -- TODO: container noktaları
+  },
+  itembox = {
+    vec3(0.0, 0.0, 0.0),         -- TODO: itembox noktaları
+  },
+}
+Config.Vault = {
+  radius      = 3.0,      -- kutuyu açmak için gereken mesafe (SUNUCUDA kontrol)
+  stashSlots  = 20,       -- kutu stash slot sayısı
+  stashWeight = 200000,   -- gram (200 kg)
+}

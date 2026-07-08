@@ -77,3 +77,22 @@ end)
 RegisterNetEvent('teke_auction:auctionBid', function(d) SendNUIMessage({ action = 'auctionBid', data = d }) end)
 
 RegisterNetEvent('teke_auction:won', function(d) SendNUIMessage({ action = 'auctionWon', data = d }) end)
+
+-- Vault listesi
+RegisterNUICallback('getVault', function(_, cb)
+  cb(lib.callback.await('teke_auction:getVault', false) or {})
+end)
+
+-- Kutuyu aç (stash) — başarılıysa tablet kapanır, ox_inventory açılır
+RegisterNUICallback('openBox', function(data, cb)
+  local res = lib.callback.await('teke_auction:openBox', false, data)
+  if res and res.ok then
+    closeTablet() -- stash açılırken tablet arayüzü kapansın
+  end
+  cb(res or { ok = false })
+end)
+
+-- Kutu tamamen boşaldı → NUI'ya bildir (liste güncellensin)
+RegisterNetEvent('teke_auction:vaultBoxOpened', function(d)
+  SendNUIMessage({ action = 'vaultBoxOpened', data = d })
+end)

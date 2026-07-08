@@ -1,52 +1,52 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
-import { VaultActionModal, type VaultAction } from '../../components/VaultActionModal/VaultActionModal'
+import { VaultActionModal } from '../../components/VaultActionModal/VaultActionModal'
 import { useVaultFiltersStore } from '../../store/createFiltersStore'
-import { VAULT_TIME_OPTIONS, toSeconds, formatHMS, type AuctionItem } from '../../lib/auctions'
-
-const INITIAL: AuctionItem[] = [
-  { kind: 'storage',   id: 'va1', name: 'STR-12', tier: 'gold',   endTime: '23:40:00', bid: 12500, participants: 7, estValue: 18000, security: 'secured' },
-  { kind: 'container', id: 'va2', name: 'CNT-A',  tier: 'silver', endTime: '18:05:00', bid: 9100,  participants: 5, estValue: 9000,  security: 'insured' },
-  { kind: 'storage',   id: 'va3', name: 'STR-07', tier: 'silver', endTime: '00:00:05', bid: 5200,  participants: 4, estValue: 6500,  security: 'none' },
-  { kind: 'storage',   id: 'va4', name: 'STR-12', tier: 'gold',   endTime: '23:40:00', bid: 12500, participants: 7, estValue: 18000, security: 'secured' },
-  { kind: 'container', id: 'va5', name: 'CNT-A',  tier: 'silver', endTime: '18:05:00', bid: 9100,  participants: 5, estValue: 9000,  security: 'insured' },
-  { kind: 'storage',   id: 'va6', name: 'STR-07', tier: 'silver', endTime: '00:00:05', bid: 5200,  participants: 4, estValue: 6500,  security: 'none' },
-  { kind: 'storage',   id: 'va7', name: 'STR-12', tier: 'gold',   endTime: '23:40:00', bid: 12500, participants: 7, estValue: 18000, security: 'secured' },
-  { kind: 'container', id: 'va8', name: 'CNT-A',  tier: 'silver', endTime: '18:05:00', bid: 9100,  participants: 5, estValue: 9000,  security: 'insured' },
-  { kind: 'storage',   id: 'va9', name: 'STR-07', tier: 'silver', endTime: '00:00:05', bid: 5200,  participants: 4, estValue: 6500,  security: 'none' },
-]
+import { VAULT_TIME_OPTIONS, type AuctionItem } from '../../lib/auctions'
+import { fetchNui } from '../../lib/fetchNui'
+import { useNuiEvent } from '../../hooks/useNuiEvent'
+import type { VaultAction } from '../../components/VaultActionModal/VaultActionModal'
 
 export const VaultTab = () => {
-  const [items, setItems] = useState<AuctionItem[]>(INITIAL)
+  const [items, setItems] = useState<AuctionItem[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const active = items.find((i) => i.id === activeId) ?? null
 
+  // sunucudan vault kutularını yükle (dev'de boş dizi mock)
+  const load = () =>
+    fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => {})
+  useEffect(() => { load() }, [])
+
+  // kutu tamamen boşaldığında sunucu haber verir → listeden çıkar
+  useNuiEvent<{ id: string }>('vaultBoxOpened', ({ id }) =>
+    setItems((prev) => prev.filter((i) => i.id !== id)),
+  )
+
   const handleAction = (id: string, action: VaultAction) => {
-    setItems((prev) =>
-      prev.flatMap((it) => {
-        if (it.id !== id) return [it]
-        switch (action.type) {
-          case 'insurance':
-            return [{ ...it, security: it.security === 'secured' ? it.security : 'insured' }]
-          case 'security':
-            return [{ ...it, security: 'secured' }]
-          case 'extend':
-            return [{ ...it, endTime: formatHMS(toSeconds(it.endTime) + action.hours * 3600) }]
-          // boşaltma/satış → kutu vault'tan çıkar (sonra loot/satış akışına bağlanacak)
-          case 'cleaner':
-          case 'cleanSelf':
-          case 'sellSystem':
-          case 'sellPlayer':
-            console.log('vault action', it.id, action) // TODO: fetchNui
-            return []
-          default:
-            return [it]
-        }
-      }),
-    )
-    // koruma/uzatma modalı açık bırakır; boşaltma/satış kapatır
-    if (action.type === 'cleaner' || action.type === 'cleanSelf' || action.type === 'sellSystem' || action.type === 'sellPlayer') {
-      setActiveId(null)
+    switch (action.type) {
+      case 'cleaner':
+      case 'cleanSelf': {
+        // "Kendin Temizle" → sunucu: lokasyon + sahiplik + stash aç
+        fetchNui<{ ok: boolean; reason?: string }>('openBox', { id })
+          .then((res) => {
+            if (res?.ok) {
+              setActiveId(null) // stash açıldı; kutu boşalınca 'vaultBoxOpened' gelir
+            } else {
+              // TODO: kullanıcıya toast: res?.reason ('toofar' | 'expired' | 'notfound' ...)
+              console.warn('openBox reddedildi:', res?.reason)
+            }
+          })
+          .catch(() => {})
+        break
+      }
+      // Sonraki fazlar (satış / sigorta / güvenlik / uzatma):
+      case 'insurance':
+      case 'security':
+      case 'extend':
+      case 'sellSystem':
+      case 'sellPlayer':
+      default:
+        break
     }
   }
 

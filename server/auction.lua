@@ -30,6 +30,31 @@ lib.addCommand('createauction', { help = 'Test auction' }, function(source)
   end
 end)
 
+-- Admin: durduğun yeri kutu noktası yaparak auction oluştur
+lib.addCommand('createauctionhere', {
+  help = 'Bulunduğun konumda auction oluştur',
+  params = {
+    { name = 'kind', type = 'string', help = 'storage | container | itembox' },
+    { name = 'tier', type = 'string', help = 'bronze | silver | gold' },
+  },
+}, function(source, args)
+  local ped = GetPlayerPed(source)
+  local c = GetEntityCoords(ped)
+  local kind = args.kind or KINDS[math.random(#KINDS)]
+  local tier = args.tier or TIERS[math.random(#TIERS)]
+  local id, status = Db.CreateAuction({
+    kind = kind, tier = tier,
+    name = ('%s-%02d'):format(PREFIX[kind], math.random(10, 99)),
+    base_bid = Config.Tiers[tier].base,
+    duration = math.random(Config.Create.minDur, Config.Create.maxDur),
+    location = { x = c.x, y = c.y, z = c.z }, -- admin'in konumu
+  })
+  local item = Db.GetOne(id)
+  if item then
+    NotifyViewers('new', { list = (status == 'upcoming') and 'upcoming' or 'ongoing', item = item })
+  end
+end)
+
 -- Zamanlı otomatik üretim (ikisi birden)
 CreateThread(function()
   while true do

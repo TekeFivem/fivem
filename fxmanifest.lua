@@ -19,6 +19,7 @@ server_scripts {
   'server/db.lua',
   'server/payouts.lua',
   'server/testsim.lua',
+  'server/vault.lua',
   'server/auction.lua',
   'server/main.lua',
 }

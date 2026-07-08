@@ -97,10 +97,22 @@ function Db.CreateAuction(d)
   local endTime = now + (d.duration or 3600)
   local status = (endTime - now > Config.GoLiveSeconds) and 'upcoming' or 'open'
   local contents = json.encode(Db.GenerateContents(d.kind, d.tier))
+
+  -- KONUM: admin verdiyse onu kullan; yoksa türe göre havuzdan RASTGELE seç
+  local loc = d.location
+  if not loc then
+    local pool = Config.VaultSpots and Config.VaultSpots[d.kind]
+    if pool and #pool > 0 then loc = pool[math.random(#pool)] end
+  end
+
   local id = MySQL.insert.await([[
-    INSERT INTO auctions (kind, name, tier, base_bid, current_price, start_time, end_time, status, contents_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ]], { d.kind, d.name, d.tier, d.base_bid, d.base_bid, now, endTime, status, contents })
+    INSERT INTO auctions
+      (kind, name, tier, base_bid, current_price, start_time, end_time, status, contents_json, loc_x, loc_y, loc_z)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ]], {
+    d.kind, d.name, d.tier, d.base_bid, d.base_bid, now, endTime, status, contents,
+    loc and loc.x or nil, loc and loc.y or nil, loc and loc.z or nil,
+  })
   return id, status
 end
 
@@ -122,7 +134,7 @@ end
 
 function Db.SettleAuction(id)
   local a = MySQL.query.await(
-    "SELECT kind, tier, contents_json, current_price, base_bid FROM auctions WHERE id = ?", { id })
+    "SELECT kind, tier, contents_json, current_price, base_bid, loc_x, loc_y, loc_z FROM auctions WHERE id = ?", { id })
   local info = a and a[1]
 
   -- satış fiyatı = son güncel fiyat
@@ -161,12 +173,15 @@ function Db.SettleAuction(id)
     end
   end
 
-  -- Kazanan: ödül kutusu
+  -- Kazanan: ödül kutusu (konum da kopyalanıyor)
   if winnerCid and info then
     MySQL.insert.await([[
-      INSERT INTO vault_boxes (owner_id, kind, tier, est_value, security, end_time, contents_json)
-      VALUES (?, ?, ?, ?, 'unprotected', ?, ?)
-    ]], { winnerCid, info.kind, info.tier, finalPrice, os.time() + 24 * 3600, info.contents_json })
+      INSERT INTO vault_boxes (owner_id, kind, tier, est_value, security, end_time, contents_json, loc_x, loc_y, loc_z)
+      VALUES (?, ?, ?, ?, 'unprotected', ?, ?, ?, ?, ?)
+    ]], {
+      winnerCid, info.kind, info.tier, finalPrice, os.time() + 24 * 3600, info.contents_json,
+      info.loc_x, info.loc_y, info.loc_z,
+    })
   end
 
   MySQL.update.await([[
