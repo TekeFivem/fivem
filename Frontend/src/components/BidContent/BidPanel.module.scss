@@ -16,77 +16,216 @@
 }
 
 .priceBar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 10px; border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.5);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)), $screen-bg;
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
-.priceIcon { display: inline-flex; width: 18px; height: 18px; color: $gold-light; }
-.priceLabel { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #c7ccd6; }
-.priceValue { margin-left: auto; display: inline-flex; }
+
+.priceIcon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  color: $gold-light;
+}
+
+.priceLabel {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #c7ccd6;
+}
+
+.priceValue {
+  margin-left: auto;
+  display: inline-flex;
+}
 
 .bidList {
-  list-style: none; margin: 0; padding: 0;
-  flex: 1; min-height: 0; overflow: hidden;
-  display: flex; flex-direction: column; gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
 .bidRow {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 3px 8px; border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 8px;
+  border-radius: 5px;
   border: 1px solid rgba(0, 0, 0, 0.3);
   @include metallic-surface(180deg);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
   min-width: 0;
 }
-.player { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #1c1f25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.amount { display: inline-flex; margin-left: 8px; }
-.secret .player { color: #6a4db0; font-style: italic; }
 
-.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.player {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #1c1f25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.amount {
+  display: inline-flex;
+  margin-left: 8px;
+}
+
+.secret .player {
+  color: #6a4db0;
+  font-style: italic;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
 .preset {
-  padding: 6px 4px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, 0.4); cursor: pointer;
-  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; color: #1c1f25; white-space: nowrap;
+  padding: 6px 4px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  color: #1c1f25;
+  white-space: nowrap;
   background: linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.4);
   transition: filter 0.15s, transform 0.08s;
-  &:hover { filter: brightness(1.06); }
-  &:active { transform: translateY(1px); }
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
-.customRow { display: flex; gap: 6px; }
+
+.customRow {
+  display: flex;
+  gap: 6px;
+}
+
 .customInput {
-  flex: 1; min-width: 0; padding: 6px 10px; border-radius: 5px;
-  border: 1px solid rgba(0, 0, 0, 0.45); background: rgba(0, 0, 0, 0.25); color: #eef1f6;
-  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px;
-  &::placeholder { color: #7f858f; }
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.25);
+  color: #eef1f6;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+
+  &::placeholder {
+    color: #7f858f;
+  }
 }
+
 .customBtn {
-  padding: 6px 14px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, 0.4); cursor: pointer;
-  font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #14321c;
+  padding: 6px 14px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #14321c;
   background: linear-gradient(180deg, #7fe6a0 0%, #3f9d63 100%);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
   transition: filter 0.15s, transform 0.08s;
-  &:hover { filter: brightness(1.06); }
-  &:active { transform: translateY(1px); }
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
 
 .secretPlate {
-  display: flex; align-items: center; gap: 10px;
-  padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.5);
   @include metallic-surface(160deg);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.45);
   transition: filter 0.15s, transform 0.08s;
-  &:hover { filter: brightness(1.05); }
-  &:active { transform: translateY(1px); }
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
-.secretDot { width: 10px; height: 10px; border-radius: 50%; background: #6c717b; box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6); }
-.secretText { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #1c1f25; }
-.secretState { margin-left: auto; font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; letter-spacing: 1px; color: #7a1f1f; }
-.secretOn { background: linear-gradient(180deg, #f3d979 0%, #caa63a 100%); border-color: rgba(90, 60, 0, 0.6); }
-.secretOn .secretDot { background: #3fe06f; box-shadow: 0 0 6px rgba(63, 224, 111, 0.85), inset 0 0 2px rgba(0, 0, 0, 0.4); }
-.secretOn .secretText { color: #2b2200; }
-.secretOn .secretState { color: #2f5d2f; }
+
+.secretDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6c717b;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+.secretText {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1c1f25;
+}
+
+.secretState {
+  margin-left: auto;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #7a1f1f;
+}
+
+.secretOn {
+  background: linear-gradient(180deg, #f3d979 0%, #caa63a 100%);
+  border-color: rgba(90, 60, 0, 0.6);
+}
+
+.secretOn .secretDot {
+  background: #3fe06f;
+  box-shadow: 0 0 6px rgba(63, 224, 111, 0.85), inset 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+.secretOn .secretText {
+  color: #2b2200;
+}
+
+.secretOn .secretState {
+  color: #2f5d2f;
+}
 
 .endedNote {
   padding: 8px 10px;
@@ -115,8 +254,17 @@
   background: $screen-bg;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 0 14px rgba(0, 0, 0, 0.6);
 }
-.blindIcon { font-size: 22px; }
-.blindText { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 12px; line-height: 1.3; color: #c7ccd6; }
+
+.blindIcon {
+  font-size: 22px;
+}
+
+.blindText {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #c7ccd6;
+}
 
 /* ended — kazanan */
 .winner {
@@ -128,6 +276,114 @@
   background: linear-gradient(180deg, #f3d979, #caa63a);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 0, 0, 0.4);
 }
-.winnerIcon { font-size: 18px; }
-.winnerName { flex: 1; min-width: 0; font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 13px; letter-spacing: 0.5px; color: #2b2200; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.winnerAmount { font-family: 'NoctrdripSolidmelt', sans-serif; font-size: 13px; color: #14321c; }
+
+.winnerIcon {
+  font-size: 18px;
+}
+
+.winnerName {
+  flex: 1;
+  min-width: 0;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #2b2200;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.winnerAmount {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 13px;
+  color: #14321c;
+}
+
+/* --- Double-bid x2 rozeti --- */
+.player {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* rozete yer aç, taşma engelle */
+.right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  flex: none;
+}
+
+.amount {
+  margin-left: 0;
+}
+
+/* boşluk artık .right gap'ten */
+
+.doubled {
+  border-color: rgba(224, 136, 58, 0.9);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 8px rgba(224, 136, 58, 0.5);
+}
+
+.x2 {
+  flex: none;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #2b1400;
+  background: linear-gradient(180deg, #ffcf7a 0%, #e0883a 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Lock Bidder uyarısı --- */
+.lockNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(150, 30, 30, 0.75);
+  background: linear-gradient(180deg, rgba(70, 12, 12, 0.6), rgba(40, 6, 6, 0.72));
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 8px rgba(200, 45, 45, 0.35);
+  animation: lockPulse 1.2s ease-in-out infinite;
+}
+
+.lockIcon {
+  font-size: 15px;
+  flex: none;
+}
+
+.lockText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #ffb0b0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockTimer {
+  flex: none;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  color: #ff6a6a;
+}
+
+@keyframes lockPulse {
+
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.22);
+  }
+}

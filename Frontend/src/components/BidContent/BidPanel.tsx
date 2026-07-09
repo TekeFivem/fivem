@@ -6,7 +6,7 @@ import { fetchNui } from '../../lib/fetchNui'
 import { useNuiEvent } from '../../hooks/useNuiEvent'
 import styles from './BidPanel.module.scss'
 
-interface BidEntry { id: string; player: string; amount: number; hidden: boolean }
+interface BidEntry { id: string; player: string; amount: number; hidden: boolean; doubled?: boolean }
 
 const MIN_BID: Record<Tier, number> = { bronze: 150, silver: 300, gold: 600 }
 const presetsFor = (tier: Tier) => [1, 2, 4, 8].map((m) => MIN_BID[tier] * m)
@@ -27,6 +27,17 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const [custom, setCustom] = useState('')
   const [finalBidUsed, setFinalBidUsed] = useState(false)
 
+  // Lock Bidder hack: kilit bitiş anı (epoch ms). 0 = kilit yok
+  const [lockUntil, setLockUntil] = useState(0)
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (lockUntil <= Date.now()) return
+    const t = setInterval(() => setNow(Date.now()), 500)
+    return () => clearInterval(t)
+  }, [lockUntil])
+  const lockLeft = Math.max(0, Math.ceil((lockUntil - now) / 1000))
+  const isLocked = lockLeft > 0
+
   // açılışta son 5 bid
   useEffect(() => {
     fetchNui<BidEntry[]>('getBids', { id: item.id }, [])
@@ -45,22 +56,33 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
     setBids((prev) => [d.entry, ...prev].slice(0, 5))
   })
 
-  const lockBids = phase === 'final' && finalBidUsed
+  // Lock Bidder: sunucu bu oyuncuyu kilitlediğinde
+  useNuiEvent<{ id: string; secondsLeft: number }>('bidLocked', (d) => {
+    if (d.id !== item.id) return
+    setLockUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
+  })
+
+  const lockBids = (phase === 'final' && finalBidUsed) || isLocked
 
   const placeBid = (amount: number) => {
     if (!amount || amount <= 0 || phase === 'ended') return
+    if (isLocked) return
     if (phase === 'final' && finalBidUsed) return
-    fetchNui<{ ok?: boolean; price?: number; doubled?: boolean }>(
+    fetchNui<{ ok?: boolean; price?: number; doubled?: boolean; reason?: string; secondsLeft?: number }>(
       'placeBid',
       { id: item.id, amount, hidden },
       { ok: true, price: price + amount },
     )
       .then((res) => {
-        if (!res || res.ok === false) return
-        const shown = res.doubled ? amount * 2 : amount      
+        if (!res || res.ok === false) {
+          if (res && res.reason === 'locked') {
+            setLockUntil(Date.now() + (res.secondsLeft ?? 0) * 1000)
+          }
+          return
+        }
+        const shown = res.doubled ? amount * 2 : amount
         setPrice(res.price ?? price + shown)
-        setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount: shown, hidden }, ...prev].slice(0, 5))
-        if (res.doubled) { /* opsiyonel: "Teklifin 2 katlandı!" toast göster */ }
+        setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount: shown, hidden, doubled: !!res.doubled }, ...prev].slice(0, 5))
         if (phase === 'final') setFinalBidUsed(true)
       })
   }
@@ -104,10 +126,13 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
       ) : (
         <ul className={styles.bidList}>
           {bids.map((b) => (
-            <li key={b.id} className={[styles.bidRow, b.hidden && styles.secret].filter(Boolean).join(' ')}>
+            <li key={b.id} className={[styles.bidRow, b.hidden && styles.secret, b.doubled && styles.doubled].filter(Boolean).join(' ')}>
               <span className={styles.player}>{label(b)}</span>
-              <span className={styles.amount}>
-                <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
+              <span className={styles.right}>
+                {b.doubled && <span className={styles.x2}>×2</span>}
+                <span className={styles.amount}>
+                  <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
+                </span>
               </span>
             </li>
           ))}
@@ -122,6 +147,13 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
         </div>
       ) : (
         <>
+          {isLocked && (
+            <div className={styles.lockNote}>
+              <span className={styles.lockIcon}>⛔</span>
+              <span className={styles.lockText}>HACKED — Teklif kilitli</span>
+              <span className={styles.lockTimer}>{lockLeft}s</span>
+            </div>
+          )}
           <div className={styles.presets}>
             {presets.map((amt) => (
               <button
@@ -140,7 +172,7 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               className={styles.customInput}
               type="number"
               min={0}
-              placeholder="Özel tutar"
+              placeholder={isLocked ? 'Teklif kilitli…' : 'Özel tutar'}
               value={custom}
               disabled={lockBids}
               onChange={(e) => setCustom(e.target.value)}
