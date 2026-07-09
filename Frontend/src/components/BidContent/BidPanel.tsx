@@ -31,7 +31,7 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   useEffect(() => {
     fetchNui<BidEntry[]>('getBids', { id: item.id }, [])
       .then(setBids)
-      .catch(() => {})
+      .catch(() => { })
   }, [item.id])
 
   // canlı fiyat: item.bid güncellenince senkronla
@@ -50,18 +50,19 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const placeBid = (amount: number) => {
     if (!amount || amount <= 0 || phase === 'ended') return
     if (phase === 'final' && finalBidUsed) return
-    fetchNui<{ ok?: boolean; price?: number }>(
+    fetchNui<{ ok?: boolean; price?: number; doubled?: boolean }>(
       'placeBid',
       { id: item.id, amount, hidden },
       { ok: true, price: price + amount },
     )
       .then((res) => {
         if (!res || res.ok === false) return
-        setPrice(res.price ?? price + amount)
-        setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount, hidden }, ...prev].slice(0, 5))
+        const shown = res.doubled ? amount * 2 : amount      
+        setPrice(res.price ?? price + shown)
+        setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount: shown, hidden }, ...prev].slice(0, 5))
+        if (res.doubled) { /* opsiyonel: "Teklifin 2 katlandı!" toast göster */ }
         if (phase === 'final') setFinalBidUsed(true)
       })
-      .catch(() => {})
   }
 
   const submitCustom = () => {

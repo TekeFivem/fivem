@@ -74,15 +74,17 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
 
   local minInc = (Config.MinBid and Config.MinBid[row.tier]) or 1
   if amount < minInc then return { ok = false, reason = 'min' } end
-  
--- Double-bid hack: hedefse teklif miktarını çarp (tek seferlik)
-local doubled = false
-amount, doubled = ConsumeDoubleBid(id, cid, amount)
 
--- para kontrol + düş (amount artık gerekiyorsa 2x)
-if (player.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'money' } end
-player.Functions.RemoveMoney('bank', amount, 'auction-bid')
-  -- para kontrol + düş
+  -- ▼ Double-bid hack: hedefse teklif miktarını çarp (tek seferlik) ▼
+  -- id string gelir; hedefler tonumber ile yazıldığı için tonumber ile oku
+  local doubled = false
+  amount, doubled = ConsumeDoubleBid(tonumber(id) or id, cid, amount)
+  if Config.Debug then
+    print(('[hack] placeBid id=%s cid=%s amount=%d doubled=%s'):format(tostring(id), cid, amount, tostring(doubled)))
+  end
+  -- ▲ ▲
+
+  -- para kontrol + düş (amount artık 2x olabilir) — TEK BLOK
   if (player.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'money' } end
   player.Functions.RemoveMoney('bank', amount, 'auction-bid')
 
@@ -107,9 +109,11 @@ player.Functions.RemoveMoney('bank', amount, 'auction-bid')
       entry = { id = tostring(bidId), player = name, amount = amount, hidden = hidden },
     }, src)
   end
+
   --remove this on prod
   if Config.Debug and TestSim and TestSim.onRealBid then TestSim.onRealBid(id) end
-  return { ok = true, price = newPrice }
+
+  return { ok = true, price = newPrice, doubled = doubled }
 end)
 
 lib.callback.register('teke_auction:getBids', function(_, data)
