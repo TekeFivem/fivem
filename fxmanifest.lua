@@ -21,6 +21,7 @@ server_scripts {
   'server/testsim.lua',
   'server/vault.lua',
   'server/auction.lua',
+  'server/hack.lua',
   'server/main.lua',
 }
 ui_page 'web/build/index.html'

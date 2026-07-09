@@ -96,3 +96,8 @@ end)
 RegisterNetEvent('teke_auction:vaultBoxOpened', function(d)
   SendNUIMessage({ action = 'vaultBoxOpened', data = d })
 end)
+
+
+RegisterNUICallback('hackDoubleBid', function(data, cb)
+  cb(lib.callback.await('teke_auction:hackDoubleBid', false, data) or { ok = false })
+end)

@@ -127,3 +127,20 @@ lib.addCommand('simclear', { help = 'Auction verilerini temizle' }, function()
   MySQL.query.await('DELETE FROM auctions')
   print('[sim] auction verileri temizlendi')
 end)
+
+
+-- /hackme <auctionId>  → kendini double-bid hedefi yap, sonra normal teklif ver → 2x düşer
+RegisterCommand('hackme', function(source, args)
+  local auctionId = tonumber(args[1])
+  if not auctionId then print('kullanım: /hackme <auctionId>'); return end
+  local player = exports.qbx_core:GetPlayer(source)
+  if not player then return end
+  local cid = player.PlayerData.citizenid
+  DoubleBidTargets[auctionId] = DoubleBidTargets[auctionId] or {}
+  DoubleBidTargets[auctionId][cid] = {
+    multiplier = Config.Hack.doubleBid.multiplier,
+    attacker   = 'TEST',
+    expires    = 0,
+  }
+  print(('[hacktest] %s auction #%d için double-bid hedefi (test)'):format(cid, auctionId))
+end, false)

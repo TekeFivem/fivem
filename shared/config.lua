@@ -63,3 +63,13 @@ Config.Vault = {
   stashSlots  = 20,       -- kutu stash slot sayısı
   stashWeight = 200000,   -- gram (200 kg)
 }
+
+
+Config.Hack = {
+  doubleBid = {
+    cost       = 5000,  -- hack ücreti: hack yapanın bankasından düşer
+    multiplier = 2,     -- hedefin sonraki teklifi kaç katı
+    duration   = 0,     -- 0 = süresiz (hedef ne zaman teklif verirse); >0 ise saniye limiti
+    oneShot    = true,  -- etki tek teklifte tükenir
+  },
+}

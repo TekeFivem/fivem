@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './BidHack.module.scss'
+import { fetchNui } from '../../lib/fetchNui'
 
 const money = (n: number) => `$${n.toLocaleString('en-US')}`
 
@@ -86,15 +87,35 @@ export const BidHack = ({ phase = 'open' }: { phase?: 'open' | 'final' | 'ended'
   const blocked = (id: string) => phase === 'ended' || (phase === 'final' && id !== 'double')
   const exposureChance = TRACE_STEPS[Math.min(traceIndex, TRACE_STEPS.length - 1)]
 
-  const runHack = (hack: HackDef, target: string) => {
+  const runHack = async (hack: HackDef, target: string) => {
     if (budget < hack.cost) return
+
+    // NUI çağrısı (FiveM backend)
+    const res = await fetchNui<{ ok: boolean; cost?: number; reason?: string }>(
+      'hack',
+      { hackId: hack.id, target },
+      { ok: true, cost: hack.cost }, // dev mock
+    )
+
+    if (!res.ok) {
+      setLog((prev) => [
+        { id: `l-${Date.now()}`, text: `Hack başarısız: ${res.reason}`, exposed: true },
+        ...prev,
+      ])
+      return
+    }
+
     const exposed = Math.random() * 100 < exposureChance
-    setBudget((b) => b - hack.cost)
+    setBudget((b) => b - (res.cost ?? hack.cost))
     setTraceIndex((t) => t + 1)
-    const text = exposed ? `Sen → ${target}: ${hack.verb}` : `${target}: ${hack.affected}`
+
+    const text = exposed
+      ? `Sen → ${target}: ${hack.verb}`
+      : `${target}: ${hack.affected}`
+
     setLog((prev) => [{ id: `l-${Date.now()}`, text, exposed }, ...prev].slice(0, 20))
-    // TODO: FiveM → fetchNui('hack', { hackId: hack.id, target, exposed })
   }
+
 
   const chooseTarget = (target: string) => {
     if (pendingHack) runHack(pendingHack, target)

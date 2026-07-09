@@ -74,7 +74,14 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
 
   local minInc = (Config.MinBid and Config.MinBid[row.tier]) or 1
   if amount < minInc then return { ok = false, reason = 'min' } end
+  
+-- Double-bid hack: hedefse teklif miktarını çarp (tek seferlik)
+local doubled = false
+amount, doubled = ConsumeDoubleBid(id, cid, amount)
 
+-- para kontrol + düş (amount artık gerekiyorsa 2x)
+if (player.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'money' } end
+player.Functions.RemoveMoney('bank', amount, 'auction-bid')
   -- para kontrol + düş
   if (player.PlayerData.money.bank or 0) < amount then return { ok = false, reason = 'money' } end
   player.Functions.RemoveMoney('bank', amount, 'auction-bid')

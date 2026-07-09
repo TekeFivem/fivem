@@ -52,10 +52,10 @@
 .expired .text { color: #c7ccd6; }
 
 /* ---- CLEAN (boşaltıldı) — victory/defeat ile aynı yapı ---- */
-.clean {
+.cleaned {
   background: rgba(8, 32, 38, 0.62);
   box-shadow:
     inset 0 0 0 3px rgba(90, 200, 220, 0.8),
     inset 0 0 60px rgba(90, 200, 220, 0.45);
 }
-.clean .text { color: #7fe0ef; }
+.cleaned .text { color: #7fe0ef; }
