@@ -111,6 +111,19 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
     end
     -- ▲ ▲
 
+    -- ▼ Freeze Price hack: auction donuksa kimse teklif veremez ▼
+    do
+        local frozen, secLeft = IsFrozen(tonumber(id) or id)
+        if frozen then
+            return {
+                ok = false,
+                reason = 'frozen',
+                secondsLeft = secLeft
+            }
+        end
+    end
+    -- ▲ ▲
+
     local a = MySQL.query.await("SELECT tier, current_price, base_bid, status FROM auctions WHERE id = ?", {id})
     if not (a and a[1]) then
         return {
@@ -133,23 +146,29 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
         }
     end
 
-    -- ▼ Double-bid hack: hedefse teklif miktarını çarp (tek seferlik) ▼
-    -- id string gelir; hedefler tonumber ile yazıldığı için tonumber ile oku
-    local doubled = false
-    amount, doubled = ConsumeDoubleBid(tonumber(id) or id, cid, amount)
-    if Config.Debug then
-        print(('[hack] placeBid id=%s cid=%s amount=%d doubled=%s'):format(tostring(id), cid, amount, tostring(doubled)))
-    end
-    -- ▲ ▲
+    -- ▼ Fake Bid: sıradaki teklif sahte mi? (tek seferlik) ▼
+    local isFake = ConsumeFakeBid(tonumber(id) or id, cid)
 
-    -- para kontrol + düş (amount artık 2x olabilir) — TEK BLOK
-    if (player.PlayerData.money.bank or 0) < amount then
-        return {
-            ok = false,
-            reason = 'money'
-        }
+    -- ▼ Double-bid (sahte teklifte uygulanmaz) ▼
+    local doubled = false
+    if not isFake then
+        amount, doubled = ConsumeDoubleBid(tonumber(id) or id, cid, amount)
     end
-    player.Functions.RemoveMoney('bank', amount, 'auction-bid')
+    if Config.Debug then
+        print(('[hack] placeBid id=%s cid=%s amount=%d doubled=%s fake=%s'):format(tostring(id), cid, amount,
+            tostring(doubled), tostring(isFake)))
+    end
+
+    -- para kontrol + düş (SAHTE teklifte ATLANIR → banka dokunulmaz)
+    if not isFake then
+        if (player.PlayerData.money.bank or 0) < amount then
+            return {
+                ok = false,
+                reason = 'money'
+            }
+        end
+        player.Functions.RemoveMoney('bank', amount, 'auction-bid')
+    end
 
     -- isim + güncel fiyat
     local name = ('%s %s'):format(player.PlayerData.charinfo.firstname, player.PlayerData.charinfo.lastname)
@@ -158,8 +177,8 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
 
     MySQL.update.await("UPDATE auctions SET current_price = ? WHERE id = ?", {newPrice, id})
     local bidId = MySQL.insert.await(
-        "INSERT INTO auction_bids (auction_id, citizenid, bidder_name, amount, hidden, is_final) VALUES (?, ?, ?, ?, ?, ?)",
-        {id, cid, name, amount, hidden and 1 or 0, (row.status == 'final') and 1 or 0})
+        "INSERT INTO auction_bids (auction_id, citizenid, bidder_name, amount, hidden, is_final, fake) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        {id, cid, name, amount, hidden and 1 or 0, (row.status == 'final') and 1 or 0, isFake and 1 or 0})
 
     -- kartlar (herkes)
     NotifyViewers('stats', {
@@ -189,7 +208,8 @@ lib.callback.register('teke_auction:placeBid', function(source, data)
     return {
         ok = true,
         price = newPrice,
-        doubled = doubled
+        doubled = doubled,
+        fake = isFake
     }
 end)
 

@@ -387,3 +387,143 @@
     filter: brightness(1.22);
   }
 }
+
+
+/* --- Freeze Price fiyat çubuğu vurgusu --- */
+.priceBarFrozen {
+  border-color: rgba(60, 150, 200, 0.7);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6), 0 0 8px rgba(70, 170, 220, 0.4);
+}
+
+/* --- Blind Bidder — liste gizleme --- */
+.blindHack {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  text-align: center;
+  border-radius: 6px;
+  background: $screen-bg;
+  box-shadow: inset 0 0 0 1px rgba(120, 40, 160, 0.5), inset 0 0 14px rgba(0, 0, 0, 0.6);
+  animation: lockPulse 1.3s ease-in-out infinite;
+}
+
+.blindHackIcon {
+  font-size: 22px;
+}
+
+.blindHackText {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #d9b3ff;
+}
+
+.blindHackTimer {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 13px;
+  color: #b47bff;
+}
+
+/* --- Freeze Price uyarısı --- */
+.freezeNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(60, 150, 200, 0.7);
+  background: linear-gradient(180deg, rgba(12, 40, 60, 0.62), rgba(6, 22, 36, 0.75));
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 8px rgba(70, 170, 220, 0.4);
+  animation: lockPulse 1.4s ease-in-out infinite;
+}
+
+.freezeIcon {
+  font-size: 15px;
+  flex: none;
+}
+
+.freezeText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #bfe6ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.freezeTimer {
+  flex: none;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 12px;
+  color: #6ec8ff;
+}
+
+/* --- Reveal Hidden bilgi bandı --- */
+.revealNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(90, 60, 0, 0.6);
+  background: linear-gradient(180deg, #f3d979 0%, #caa63a 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.revealIcon {
+  font-size: 14px;
+  flex: none;
+}
+
+.revealText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #2b2200;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Fake Bid — kendine özel gösterge --- */
+.fakeNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px dashed rgba(180, 120, 220, 0.7);
+  background: linear-gradient(180deg, rgba(40, 20, 55, 0.55), rgba(24, 10, 36, 0.7));
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.45);
+}
+
+.fakeIcon {
+  font-size: 14px;
+  flex: none;
+}
+
+.fakeText {
+  flex: 1;
+  min-width: 0;
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #e0c3ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

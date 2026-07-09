@@ -33,7 +33,6 @@ Config.MinBid = {
     gold = 600
 }
 
--- ⚠️ TEK Config.Hack (eski iki ayrı tanım birleştirildi)
 Config.Hack = {
     traceSteps = {5, 10, 25, 45, 70, 100},
     cleanCost = 2000,
@@ -46,20 +45,36 @@ Config.Hack = {
         freeze = 900
     },
 
-    -- Double Bid hack ayarları
-    multiplier = 2, -- ConsumeDoubleBid yedek çarpanı
+    -- Double Bid
+    multiplier = 2,
     doubleBid = {
-        cost = 5000, -- hack ücreti: hack yapanın bankasından düşer (hack.lua bunu kullanıyor)
-        multiplier = 2, -- hedefin sonraki teklifi kaç katı
-        duration = 0, -- 0 = süresiz (hedef ne zaman teklif verirse); >0 ise saniye limiti
-        oneShot = true -- etki tek teklifte tükenir
+        cost = 5000,
+        multiplier = 2,
+        duration = 0,
+        oneShot = true
     },
+    -- Lock Bidder
     lockBidder = {
-        cost = 4000, -- hack ücreti: hack yapanın bankasından düşer
-        duration = 30 -- saniye: hedef bu süre teklif veremez
-    }
-}
+        cost = 4000,
+        duration = 30
+    },
 
+    -- ▼ YENİ HACKLER ▼
+    blindBidder = {
+        cost = 3000,
+        duration = 20
+    }, -- hedef bu süre teklifleri göremez
+    revealHidden = {
+        cost = 3500
+    }, -- gizli teklif sahibini açığa çıkar (tek seferlik)
+    fakeBid = {
+        cost = 2500
+    }, -- sıradaki teklif sahte: para düşmez, kazanamaz
+    freezePrice = {
+        cost = 6000,
+        duration = 15
+    } -- fiyat bu süre donar, kimse teklif veremez
+}
 Config.Loot = {
     storage = {
         bronze = {{

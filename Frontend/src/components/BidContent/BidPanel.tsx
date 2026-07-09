@@ -27,16 +27,28 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const [custom, setCustom] = useState('')
   const [finalBidUsed, setFinalBidUsed] = useState(false)
 
-  // Lock Bidder hack: kilit bitiş anı (epoch ms). 0 = kilit yok
+  // hack durumları (epoch ms). 0 = etkisiz
   const [lockUntil, setLockUntil] = useState(0)
+  const [blindUntil, setBlindUntil] = useState(0)
+  const [frozenUntil, setFrozenUntil] = useState(0)
+  const [revealed, setRevealed] = useState<string | null>(null)
+  const [fakeArmed, setFakeArmed] = useState(false)
   const [now, setNow] = useState(Date.now())
+
   useEffect(() => {
-    if (lockUntil <= Date.now()) return
+    const active = Math.max(lockUntil, blindUntil, frozenUntil)
+    if (active <= Date.now()) return
     const t = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(t)
-  }, [lockUntil])
-  const lockLeft = Math.max(0, Math.ceil((lockUntil - now) / 1000))
+  }, [lockUntil, blindUntil, frozenUntil])
+
+  const secLeft = (until: number) => Math.max(0, Math.ceil((until - now) / 1000))
+  const lockLeft = secLeft(lockUntil)
+  const blindLeft = secLeft(blindUntil)
+  const frozenLeft = secLeft(frozenUntil)
   const isLocked = lockLeft > 0
+  const isBlind = blindLeft > 0
+  const isFrozen = frozenLeft > 0
 
   // açılışta son 5 bid
   useEffect(() => {
@@ -45,10 +57,8 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
       .catch(() => { })
   }, [item.id])
 
-  // canlı fiyat: item.bid güncellenince senkronla
-  useEffect(() => {
-    setPrice(item.bid)
-  }, [item.bid])
+  // canlı fiyat
+  useEffect(() => { setPrice(item.bid) }, [item.bid])
 
   // canlı: başkalarının teklifleri
   useNuiEvent<{ id: string; entry: BidEntry }>('auctionBid', (d) => {
@@ -56,30 +66,48 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
     setBids((prev) => [d.entry, ...prev].slice(0, 5))
   })
 
-  // Lock Bidder: sunucu bu oyuncuyu kilitlediğinde
+  // hack event'leri
   useNuiEvent<{ id: string; secondsLeft: number }>('bidLocked', (d) => {
-    if (d.id !== item.id) return
-    setLockUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
+    if (d.id === item.id) setLockUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
+  })
+  useNuiEvent<{ id: string; secondsLeft: number }>('bidBlinded', (d) => {
+    if (d.id === item.id) setBlindUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
+  })
+  useNuiEvent<{ id: string; secondsLeft: number }>('priceFrozen', (d) => {
+    if (d.id === item.id) setFrozenUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
+  })
+  useNuiEvent<{ id: string; name: string }>('hiddenRevealed', (d) => {
+    if (d.id === item.id) setRevealed(d.name)
+  })
+  useNuiEvent<{ id: string }>('fakeArmed', (d) => {
+    if (d.id === item.id) setFakeArmed(true)
   })
 
-  const lockBids = (phase === 'final' && finalBidUsed) || isLocked
+  // reveal banner otomatik kaybolsun
+  useEffect(() => {
+    if (!revealed) return
+    const t = setTimeout(() => setRevealed(null), 8000)
+    return () => clearTimeout(t)
+  }, [revealed])
+
+  const lockBids = (phase === 'final' && finalBidUsed) || isLocked || isFrozen
 
   const placeBid = (amount: number) => {
     if (!amount || amount <= 0 || phase === 'ended') return
-    if (isLocked) return
+    if (isLocked || isFrozen) return
     if (phase === 'final' && finalBidUsed) return
-    fetchNui<{ ok?: boolean; price?: number; doubled?: boolean; reason?: string; secondsLeft?: number }>(
+    fetchNui<{ ok?: boolean; price?: number; doubled?: boolean; fake?: boolean; reason?: string; secondsLeft?: number }>(
       'placeBid',
       { id: item.id, amount, hidden },
       { ok: true, price: price + amount },
     )
       .then((res) => {
         if (!res || res.ok === false) {
-          if (res && res.reason === 'locked') {
-            setLockUntil(Date.now() + (res.secondsLeft ?? 0) * 1000)
-          }
+          if (res?.reason === 'locked') setLockUntil(Date.now() + (res.secondsLeft ?? 0) * 1000)
+          if (res?.reason === 'frozen') setFrozenUntil(Date.now() + (res.secondsLeft ?? 0) * 1000)
           return
         }
+        if (res.fake) setFakeArmed(false) // sahte teklif kullanıldı
         const shown = res.doubled ? amount * 2 : amount
         setPrice(res.price ?? price + shown)
         setBids((prev) => [{ id: `me-${Date.now()}`, player: 'Sen', amount: shown, hidden, doubled: !!res.doubled }, ...prev].slice(0, 5))
@@ -101,16 +129,16 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
     return top ? { name: label(top), amount: top.amount } : null
   }, [bids, item.winner, item.paid, price])
 
-  const priceLabel = phase === 'ended' ? 'Son Fiyat' : phase === 'final' ? 'Son Teklif' : 'Güncel Fiyat'
+  const priceLabel = phase === 'ended' ? 'Son Fiyat' : phase === 'final' ? 'Son Teklif' : isFrozen ? 'Donduruldu' : 'Güncel Fiyat'
   const priceValue = phase === 'ended' ? (winner?.amount ?? price) : price
 
   return (
     <div className={styles.panel}>
-      <div className={styles.priceBar}>
+      <div className={[styles.priceBar, isFrozen && styles.priceBarFrozen].filter(Boolean).join(' ')}>
         <span className={styles.priceIcon}><BidIcon /></span>
         <span className={styles.priceLabel}>{priceLabel}</span>
         <span className={styles.priceValue}>
-          <SevenSegment value={`${priceValue}$`} color="#f3d979" size={20} />
+          <SevenSegment value={`${priceValue}$`} color={isFrozen ? '#6ec8ff' : '#f3d979'} size={20} />
         </span>
       </div>
 
@@ -122,6 +150,12 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               ? 'Son teklifin verildi — sonucu bekle. Rakip teklifleri gizli.'
               : 'Son 10 saniye — rakip teklifleri gizli. Tek son teklifini gir!'}
           </span>
+        </div>
+      ) : isBlind ? (
+        <div className={styles.blindHack}>
+          <span className={styles.blindHackIcon}>🚫</span>
+          <span className={styles.blindHackText}>HACKED — Teklifler gizlendi</span>
+          <span className={styles.blindHackTimer}>{blindLeft}s</span>
         </div>
       ) : (
         <ul className={styles.bidList}>
@@ -147,11 +181,30 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
         </div>
       ) : (
         <>
+          {isFrozen && (
+            <div className={styles.freezeNote}>
+              <span className={styles.freezeIcon}>❄️</span>
+              <span className={styles.freezeText}>Fiyat donduruldu — teklif kapalı</span>
+              <span className={styles.freezeTimer}>{frozenLeft}s</span>
+            </div>
+          )}
           {isLocked && (
             <div className={styles.lockNote}>
               <span className={styles.lockIcon}>⛔</span>
               <span className={styles.lockText}>HACKED — Teklif kilitli</span>
               <span className={styles.lockTimer}>{lockLeft}s</span>
+            </div>
+          )}
+          {revealed && (
+            <div className={styles.revealNote}>
+              <span className={styles.revealIcon}>👁</span>
+              <span className={styles.revealText}>Gizli teklif sahibi: {revealed}</span>
+            </div>
+          )}
+          {fakeArmed && !isFrozen && (
+            <div className={styles.fakeNote}>
+              <span className={styles.fakeIcon}>🎭</span>
+              <span className={styles.fakeText}>Sıradaki teklifin SAHTE (para düşmez)</span>
             </div>
           )}
           <div className={styles.presets}>
@@ -172,7 +225,7 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               className={styles.customInput}
               type="number"
               min={0}
-              placeholder={isLocked ? 'Teklif kilitli…' : 'Özel tutar'}
+              placeholder={isFrozen ? 'Fiyat donduruldu…' : isLocked ? 'Teklif kilitli…' : 'Özel tutar'}
               value={custom}
               disabled={lockBids}
               onChange={(e) => setCustom(e.target.value)}

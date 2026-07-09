@@ -176,3 +176,51 @@ RegisterNetEvent('teke_auction:bidLocked', function(d)
         data = d
     })
 end)
+
+-- Yeni hack tetikleyicileri (NUI → server)
+RegisterNUICallback('hackBlindBidder', function(data, cb)
+    cb(lib.callback.await('teke_auction:hackBlindBidder', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('hackRevealHidden', function(data, cb)
+    cb(lib.callback.await('teke_auction:hackRevealHidden', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('hackFakeBid', function(data, cb)
+    cb(lib.callback.await('teke_auction:hackFakeBid', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('hackFreezePrice', function(data, cb)
+    cb(lib.callback.await('teke_auction:hackFreezePrice', false, data) or {
+        ok = false
+    })
+end)
+
+-- Server → client bildirimleri
+RegisterNetEvent('teke_auction:bidBlinded', function(d)
+    SendNUIMessage({
+        action = 'bidBlinded',
+        data = d
+    })
+end)
+RegisterNetEvent('teke_auction:priceFrozen', function(d)
+    SendNUIMessage({
+        action = 'priceFrozen',
+        data = d
+    })
+end)
+RegisterNetEvent('teke_auction:hiddenRevealed', function(d)
+    SendNUIMessage({
+        action = 'hiddenRevealed',
+        data = d
+    })
+end)
+RegisterNetEvent('teke_auction:fakeArmed', function(d)
+    SendNUIMessage({
+        action = 'fakeArmed',
+        data = d
+    })
+end)

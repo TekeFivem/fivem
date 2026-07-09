@@ -258,3 +258,72 @@ RegisterCommand('lockme', function(source, args)
     })
     print(('[hacktest] %s auction #%d %d sn bid-kilitli'):format(cid, auctionId, sec))
 end, false)
+
+-- /blindme <auctionId> [sn] → kendini süreli "kör" yap
+RegisterCommand('blindme', function(source, args)
+    local id = args[1];
+    if not id then
+        print('kullanım: /blindme <auctionId> [sn]');
+        return
+    end
+    local sec = tonumber(args[2]) or (Config.Hack.blindBidder and Config.Hack.blindBidder.duration) or 20
+    TriggerClientEvent('teke_auction:bidBlinded', source, {
+        id = tostring(id),
+        secondsLeft = sec
+    })
+    print(('[hacktest] blind #%s %ds'):format(tostring(id), sec))
+end, false)
+
+-- /freezeme <auctionId> [sn] → fiyatı süreli dondur (herkese)
+RegisterCommand('freezeme', function(source, args)
+    local id = args[1];
+    if not id then
+        print('kullanım: /freezeme <auctionId> [sn]');
+        return
+    end
+    local sec = tonumber(args[2]) or (Config.Hack.freezePrice and Config.Hack.freezePrice.duration) or 15
+    FreezeAuction(id, sec)
+    NotifyViewers('priceFrozen', {
+        id = tostring(id),
+        secondsLeft = sec
+    })
+    print(('[hacktest] freeze #%s %ds'):format(tostring(id), sec))
+end, false)
+
+-- /fakeme <auctionId> → sıradaki teklifin sahte olur
+RegisterCommand('fakeme', function(source, args)
+    local id = args[1];
+    if not id then
+        print('kullanım: /fakeme <auctionId>');
+        return
+    end
+    local player = exports.qbx_core:GetPlayer(source);
+    if not player then
+        return
+    end
+    SetFakeBid(id, player.PlayerData.citizenid)
+    TriggerClientEvent('teke_auction:fakeArmed', source, {
+        id = tostring(id)
+    })
+    print(('[hacktest] fake armed #%s'):format(tostring(id)))
+end, false)
+
+-- /revealme <auctionId> → o auction'daki SON gizli teklifin sahibini öğren
+RegisterCommand('revealme', function(source, args)
+    local id = args[1];
+    if not id then
+        print('kullanım: /revealme <auctionId>');
+        return
+    end
+    local row = MySQL.query.await(
+        "SELECT bidder_name FROM auction_bids WHERE auction_id = ? AND hidden = 1 ORDER BY id DESC LIMIT 1", {id})
+    if not (row and row[1]) then
+        print('[hacktest] gizli teklif yok');
+        return
+    end
+    TriggerClientEvent('teke_auction:hiddenRevealed', source, {
+        id = tostring(id),
+        name = row[1].bidder_name
+    })
+    print(('[hacktest] reveal #%s → %s'):format(tostring(id), row[1].bidder_name))
+end, false)
