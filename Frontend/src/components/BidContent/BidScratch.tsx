@@ -1,80 +1,103 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchNui } from '../../lib/fetchNui'
 import styles from './BidScratch.module.scss'
 
-interface ScratchItem { id: string; name: string; emoji?: string }
+interface ScratchLabel { id: string; name: string; emoji?: string }
+interface ScratchCell { index: number; opened: boolean; empty?: boolean; item?: ScratchLabel }
+interface ScratchState {
+  ok?: boolean
+  reason?: string
+  cellCount: number
+  openedCount: number
+  nextCost: number
+  cells: ScratchCell[]
+}
 
-const SCRATCH_POOL: ScratchItem[] = [
-  { id: 'phone',  name: 'Telefon',    emoji: '📱' },
-  { id: 'tv',     name: 'Televizyon', emoji: '📺' },
-  { id: 'laptop', name: 'Laptop',     emoji: '💻' },
-  { id: 'watch',  name: 'Saat',       emoji: '⌚' },
-]
-const CELL_COUNT = 6
-const EMPTY_COUNT = CELL_COUNT - SCRATCH_POOL.length // sabit boş sayısı
-const BASE_COST = 250
-const GROWTH = 1.6
-const scratchCost = (opened: number) => Math.round(BASE_COST * Math.pow(GROWTH, opened))
 const money = (n: number) => `$${n.toLocaleString('en-US')}`
 
-interface ScratchCell { id: string; item: ScratchItem | null }
-
-const mulberry32 = (seed: number) => () => {
-  seed |= 0
-  seed = (seed + 0x6d2b79f5) | 0
-  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-}
-const buildCells = (seed: number): ScratchCell[] => {
-  const rand = mulberry32(seed)
-  const contents: (ScratchItem | null)[] = [
-    ...SCRATCH_POOL,
-    ...Array.from({ length: EMPTY_COUNT }, () => null),
-  ]
-  for (let i = contents.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1))
-    ;[contents[i], contents[j]] = [contents[j], contents[i]]
-  }
-  return contents.map((item, i) => ({ id: `cell-${i}`, item }))
+// tarayıcı geliştirme için mock
+const MOCK: ScratchState = {
+  ok: true, cellCount: 6, openedCount: 0, nextCost: 250,
+  cells: Array.from({ length: 6 }, (_, i) => ({ index: i, opened: false })),
 }
 
-export const BidScratch = () => {
-  const seed = useMemo(() => Math.floor(Math.random() * 1e9), [])
-  const cells = useMemo(() => buildCells(seed), [seed])
-  const [revealed, setRevealed] = useState<Set<string>>(new Set())
-  const nextCost = scratchCost(revealed.size)
+interface Props { auctionId: string; disabled?: boolean }
 
-  const reveal = (id: string) => {
-    if (revealed.has(id)) return
-    setRevealed((prev) => {
-      const next = new Set(prev)
-      next.add(id)
-      return next
-    })
-    // TODO: FiveM → fetchNui('scratchBox', { cellId: id })
+export const BidScratch = ({ auctionId, disabled }: Props) => {
+  const [state, setState] = useState<ScratchState | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    let timer: number | undefined
+    const load = () => {
+      fetchNui<ScratchState>('getScratch', { auctionId }, MOCK)
+        .then((res) => {
+          if (!alive) return
+          setState(res)
+          // katılımcı değilse periyodik dene, katılınca dur
+          if (res && res.ok === false && res.reason === 'notparticipant') {
+            if (!timer) timer = window.setInterval(load, 3000)
+          } else if (timer) {
+            window.clearInterval(timer); timer = undefined
+          }
+        })
+        .catch(() => { if (alive) setState(MOCK) })
+    }
+    load()
+    return () => { alive = false; if (timer) window.clearInterval(timer) }
+  }, [auctionId])
+
+  const locked = !!disabled || (!!state && state.ok === false && state.reason === 'notparticipant')
+  const cellCount = state?.cellCount ?? 6
+  const nextCost = state?.nextCost ?? 0
+  const cells: ScratchCell[] = state?.cells ?? Array.from({ length: cellCount }, (_, i) => ({ index: i, opened: false }))
+
+  const open = (index: number) => {
+    if (busy || locked) return
+    const cell = cells.find((c) => c.index === index)
+    if (!cell || cell.opened) return
+    setBusy(true)
+    fetchNui<{ ok?: boolean; reason?: string; index: number; empty?: boolean; item?: ScratchLabel; openedCount: number; nextCost: number }>(
+      'scratchOpen',
+      { auctionId, cellIndex: index },
+      { ok: true, index, empty: Math.random() < 0.3, item: { id: 'phone', name: 'Telefon', emoji: '📱' }, openedCount: (state?.openedCount ?? 0) + 1, nextCost: Math.round(nextCost * 1.6) },
+    )
+      .then((res) => {
+        if (!res || res.ok === false) return
+        setState((prev) => {
+          const base = prev ?? MOCK
+          return {
+            ...base,
+            openedCount: res.openedCount,
+            nextCost: res.nextCost,
+            cells: base.cells.map((c) =>
+              c.index === index ? { index, opened: true, empty: res.empty, item: res.item } : c),
+          }
+        })
+      })
+      .finally(() => setBusy(false))
   }
 
   return (
-  <div className={styles.panel}>
-    <div className={styles.grid}>
-      {cells.map((cell) => {
-        const open = revealed.has(cell.id)
-        return (
+    <div className={styles.panel}>
+      <div className={styles.grid}>
+        {cells.map((cell) => (
           <button
-            key={cell.id}
+            key={cell.index}
             type="button"
-            className={[styles.box, open && styles.open].filter(Boolean).join(' ')}
-            onClick={() => reveal(cell.id)}
-            disabled={open}
+            className={[styles.box, cell.opened && styles.open].filter(Boolean).join(' ')}
+            onClick={() => open(cell.index)}
+            disabled={cell.opened || busy || locked}
           >
-            {open ? (
-              cell.item ? (
-                <span className={styles.inner}>
-                  <span className={styles.emoji}>{cell.item.emoji}</span>
-                  <span className={styles.name}>{cell.item.name}</span>
-                </span>
-              ) : (
+            {cell.opened ? (
+              cell.empty ? (
                 <span className={styles.empty}>BOŞ</span>
+              ) : (
+                <span className={styles.inner}>
+                  <span className={styles.emoji}>{cell.item?.emoji}</span>
+                  <span className={styles.name}>{cell.item?.name}</span>
+                </span>
               )
             ) : (
               <span className={styles.cover}>
@@ -83,9 +106,13 @@ export const BidScratch = () => {
               </span>
             )}
           </button>
-        )
-      })}
+        ))}
+      </div>
+      {locked && (
+        <div className={styles.locked}>
+          <span className={styles.lockedText}>{disabled ? 'Kapandı' : 'Katılınca açılır'}</span>
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
 }

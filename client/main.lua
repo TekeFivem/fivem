@@ -224,3 +224,12 @@ RegisterNetEvent('teke_auction:fakeArmed', function(d)
         data = d
     })
 end)
+-- Scratch Card (NUI → server)
+RegisterNUICallback('getScratch', function(data, cb)
+    cb(lib.callback.await('teke_auction:getScratch', false, data) or {})
+end)
+RegisterNUICallback('scratchOpen', function(data, cb)
+    cb(lib.callback.await('teke_auction:scratchOpen', false, data) or {
+        ok = false
+    })
+end)

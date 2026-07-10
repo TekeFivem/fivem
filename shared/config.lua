@@ -22,10 +22,47 @@ Config.Tiers = {
     }
 }
 Config.Scratch = {
-    cellCount = 6,
-    baseCost = 250,
-    growth = 1.6,
-    pool = {'phone', 'tv', 'laptop', 'watch'}
+    cellCount = 6, -- toplam kutu sayısı
+    baseCost = 250, -- ilk açılışın fiyatı
+    growth = 1.6, -- her açılışta sıradaki kutu fiyatı ×growth
+    minEmpty = 1, -- en az boş kutu (auction'a göre random)
+    maxEmpty = 3, -- en fazla boş kutu (auction'a göre random)
+    useAuctionContents = true, -- itemler auction'ın contents_json'ından gelsin
+    pool = {'phone', 'tv', 'laptop', 'watch'}, -- contents boşsa yedek havuz
+    labels = { -- item id → NUI'da görünecek ad + emoji
+        phone = {
+            name = 'Telefon',
+            emoji = '📱'
+        },
+        tv = {
+            name = 'Televizyon',
+            emoji = '📺'
+        },
+        laptop = {
+            name = 'Laptop',
+            emoji = '💻'
+        },
+        watch = {
+            name = 'Saat',
+            emoji = '⌚'
+        },
+        water = {
+            name = 'Su',
+            emoji = '💧'
+        },
+        bread = {
+            name = 'Ekmek',
+            emoji = '🍞'
+        },
+        goldbar = {
+            name = 'Külçe Altın',
+            emoji = '🥇'
+        },
+        rolex = {
+            name = 'Rolex',
+            emoji = '⌚'
+        }
+    }
 }
 Config.MinBid = {
     bronze = 150,
