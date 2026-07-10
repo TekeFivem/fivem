@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AuctionItem, Tier } from '../../lib/auctions'
 import { SevenSegment } from '../SevenSegment/SevenSegment'
 import { BidIcon } from '../icons'
@@ -11,7 +11,6 @@ interface BidEntry { id: string; player: string; amount: number; hidden: boolean
 const MIN_BID: Record<Tier, number> = { bronze: 150, silver: 300, gold: 600 }
 const presetsFor = (tier: Tier) => [1, 2, 4, 8].map((m) => MIN_BID[tier] * m)
 const money = (n: number) => `$${n.toLocaleString('en-US')}`
-const label = (b: BidEntry) => (b.hidden ? 'Gizli Teklif' : b.player)
 
 interface Props {
   item: AuctionItem
@@ -31,9 +30,13 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const [lockUntil, setLockUntil] = useState(0)
   const [blindUntil, setBlindUntil] = useState(0)
   const [frozenUntil, setFrozenUntil] = useState(0)
-  const [revealed, setRevealed] = useState<string | null>(null)
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set()) // reveal edilen gizli teklif id'leri
   const [fakeArmed, setFakeArmed] = useState(false)
   const [now, setNow] = useState(Date.now())
+
+  // reveal anında güncel bids listesini okumak için ref
+  const bidsRef = useRef<BidEntry[]>([])
+  useEffect(() => { bidsRef.current = bids }, [bids])
 
   useEffect(() => {
     const active = Math.max(lockUntil, blindUntil, frozenUntil)
@@ -49,6 +52,9 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const isLocked = lockLeft > 0
   const isBlind = blindLeft > 0
   const isFrozen = frozenLeft > 0
+
+  // gizli teklif ismi: reveal edilmemişse "Gizli Teklif"
+  const nameOf = (b: BidEntry) => (b.hidden && !revealedIds.has(b.id)) ? 'Gizli Teklif' : b.player
 
   // açılışta son 5 bid
   useEffect(() => {
@@ -76,19 +82,18 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   useNuiEvent<{ id: string; secondsLeft: number }>('priceFrozen', (d) => {
     if (d.id === item.id) setFrozenUntil(Date.now() + (d.secondsLeft ?? 0) * 1000)
   })
-  useNuiEvent<{ id: string; name: string }>('hiddenRevealed', (d) => {
-    if (d.id === item.id) setRevealed(d.name)
+  // Reveal Hidden: o anki son 5 içindeki gizli teklifleri aç
+  useNuiEvent<{ id: string }>('hiddenRevealed', (d) => {
+    if (d.id !== item.id) return
+    setRevealedIds((prev) => {
+      const next = new Set(prev)
+      bidsRef.current.forEach((b) => { if (b.hidden) next.add(b.id) })
+      return next
+    })
   })
   useNuiEvent<{ id: string }>('fakeArmed', (d) => {
     if (d.id === item.id) setFakeArmed(true)
   })
-
-  // reveal banner otomatik kaybolsun
-  useEffect(() => {
-    if (!revealed) return
-    const t = setTimeout(() => setRevealed(null), 8000)
-    return () => clearTimeout(t)
-  }, [revealed])
 
   const lockBids = (phase === 'final' && finalBidUsed) || isLocked || isFrozen
 
@@ -126,19 +131,28 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
   const winner = useMemo(() => {
     if (item.winner) return { name: item.winner, amount: item.paid ?? price }
     const top = [...bids].sort((a, b) => b.amount - a.amount)[0]
-    return top ? { name: label(top), amount: top.amount } : null
-  }, [bids, item.winner, item.paid, price])
+    return top ? { name: nameOf(top), amount: top.amount } : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bids, item.winner, item.paid, price, revealedIds])
 
-  const priceLabel = phase === 'ended' ? 'Son Fiyat' : phase === 'final' ? 'Son Teklif' : isFrozen ? 'Donduruldu' : 'Güncel Fiyat'
+  const priceLabel = phase === 'ended' ? 'Son Fiyat'
+    : phase === 'final' ? 'Son Teklif'
+      : isBlind ? 'Gizlendi'
+        : isFrozen ? 'Donduruldu'
+          : 'Güncel Fiyat'
   const priceValue = phase === 'ended' ? (winner?.amount ?? price) : price
 
   return (
     <div className={styles.panel}>
-      <div className={[styles.priceBar, isFrozen && styles.priceBarFrozen].filter(Boolean).join(' ')}>
+      <div className={[styles.priceBar, isFrozen && styles.priceBarFrozen, isBlind && styles.priceBarBlind].filter(Boolean).join(' ')}>
         <span className={styles.priceIcon}><BidIcon /></span>
         <span className={styles.priceLabel}>{priceLabel}</span>
         <span className={styles.priceValue}>
-          <SevenSegment value={`${priceValue}$`} color={isFrozen ? '#6ec8ff' : '#f3d979'} size={20} />
+          {isBlind ? (
+            <span className={styles.priceHidden}>•••••</span>
+          ) : (
+            <SevenSegment value={`${priceValue}$`} color={isFrozen ? '#6ec8ff' : '#f3d979'} size={20} />
+          )}
         </span>
       </div>
 
@@ -159,17 +173,31 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
         </div>
       ) : (
         <ul className={styles.bidList}>
-          {bids.map((b) => (
-            <li key={b.id} className={[styles.bidRow, b.hidden && styles.secret, b.doubled && styles.doubled].filter(Boolean).join(' ')}>
-              <span className={styles.player}>{label(b)}</span>
-              <span className={styles.right}>
-                {b.doubled && <span className={styles.x2}>×2</span>}
-                <span className={styles.amount}>
-                  <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
+          {bids.map((b) => {
+            const isRevealed = b.hidden && revealedIds.has(b.id)
+            return (
+              <li
+                key={b.id}
+                className={[
+                  styles.bidRow,
+                  b.hidden && !isRevealed && styles.secret,
+                  isRevealed && styles.revealed,
+                  b.doubled && styles.doubled,
+                ].filter(Boolean).join(' ')}
+              >
+                <span className={styles.player}>
+                  {isRevealed && <span className={styles.revealEye}>👁</span>}
+                  {nameOf(b)}
                 </span>
-              </span>
-            </li>
-          ))}
+                <span className={styles.right}>
+                  {b.doubled && <span className={styles.x2}>×2</span>}
+                  <span className={styles.amount}>
+                    <SevenSegment value={`${b.amount}$`} color="#5fe06f" size={12} />
+                  </span>
+                </span>
+              </li>
+            )
+          })}
         </ul>
       )}
 
@@ -193,12 +221,6 @@ export const BidPanel = ({ item, phase = 'open' }: Props) => {
               <span className={styles.lockIcon}>⛔</span>
               <span className={styles.lockText}>HACKED — Teklif kilitli</span>
               <span className={styles.lockTimer}>{lockLeft}s</span>
-            </div>
-          )}
-          {revealed && (
-            <div className={styles.revealNote}>
-              <span className={styles.revealIcon}>👁</span>
-              <span className={styles.revealText}>Gizli teklif sahibi: {revealed}</span>
             </div>
           )}
           {fakeArmed && !isFrozen && (
