@@ -6,7 +6,7 @@
 
 local function Cfg() return Config.Scratch or {} end
 
--- Deterministik PRNG (Park–Miller LCG) → aynı seed = aynı sonuç
+-- Deterministik PRNG (Park–Miller LCG)
 local function makeRng(seed)
     local s = math.floor(seed) % 2147483647
     if s <= 0 then s = s + 2147483646 end
@@ -24,7 +24,6 @@ local function strHash(str)
     return h
 end
 
--- Fisher–Yates (deterministik rng ile)
 local function shuffle(list, rng)
     for i = #list, 2, -1 do
         local j = math.floor(rng() * i) + 1
@@ -33,29 +32,24 @@ local function shuffle(list, rng)
     return list
 end
 
--- Açılan kutular: ScratchOpened[auctionId][cid] = { [cellIndex]=true, ... }
-local ScratchOpened = {}
-
-local function openedSet(id, cid)
-    local key = tostring(id)
-    ScratchOpened[key] = ScratchOpened[key] or {}
-    ScratchOpened[key][cid] = ScratchOpened[key][cid] or {}
-    return ScratchOpened[key][cid]
+-- DB helper: oyuncunun açtığı kutular
+local function openedRows(id, cid)
+    local rows = MySQL.query.await(
+        "SELECT cell_index, item_id FROM auction_scratch WHERE auction_id = ? AND citizenid = ?", { id, cid })
+    local map, n = {}, 0
+    for _, r in ipairs(rows or {}) do
+        map[r.cell_index] = (r.item_id ~= nil) and r.item_id or false
+        n = n + 1
+    end
+    return map, n
 end
 
-local function openedCountOf(set)
-    local n = 0
-    for _ in pairs(set) do n = n + 1 end
-    return n
-end
-
--- Fiyat: baseCost * growth^opened (yuvarlanmış)
+-- Fiyat: baseCost * growth^opened
 local function scratchCost(opened)
     local c = Cfg()
     return math.floor((c.baseCost or 250) * ((c.growth or 1.6) ^ opened) + 0.5)
 end
 
--- Item etiketi (ad + emoji) — config.labels, yoksa güvenli fallback
 local function labelOf(itemId)
     local l = (Cfg().labels or {})[itemId]
     return {
@@ -65,7 +59,6 @@ local function labelOf(itemId)
     }
 end
 
--- Auction contents_json → distinct item id listesi
 local function auctionItems(id)
     local row = MySQL.query.await("SELECT contents_json FROM auctions WHERE id = ?", {id})
     local seen, list = {}, {}
@@ -84,47 +77,36 @@ local function auctionItems(id)
     return list
 end
 
--- Auction için KANONİK içerik seti (herkes için AYNI multiset)
--- Kural: SADECE auction içeriğindeki itemler; her item en fazla 1 kez.
--- Havuz/uydurma YOK. İçerik azsa → boş kutular. Boşluk olasılığı içerik zenginliğine göre.
 local function canonicalBag(id)
     local c = Cfg()
     local cellCount = c.cellCount or 6
     local rng = makeRng(tonumber(id) or strHash(tostring(id)))
 
-    -- yalnızca auction içeriğindeki DISTINCT itemler (karışık sırayla)
     local items = auctionItems(id)
     shuffle(items, rng)
     local D = #items
 
-    -- içerik doygunluğu 0..1 : içerik ne kadar fazlaysa 1'e yaklaşır
     local ref = c.fullnessRef or cellCount
-    if ref < 1 then
-        ref = 1
-    end
+    if ref < 1 then ref = 1 end
     local fullness = math.min(D, ref) / ref
 
-    -- her doldurulabilir kutunun boş kalma olasılığı:
-    -- fullness→1 (içerik zengin) → emptyChanceMin, fullness→0 (içerik az) → emptyChanceMax
     local emin = c.emptyChanceMin or 0.0
     local emax = c.emptyChanceMax or 0.6
     local emptyChance = emin + (emax - emin) * (1 - fullness)
 
-    -- kutuları doldur: item varsa ve boş olasılığı tutmadıysa gerçek item, aksi halde boş
     local bag = {}
     local used = 0
     for i = 1, cellCount do
         if used < D and rng() >= emptyChance then
             used = used + 1
-            bag[i] = items[used] -- içerikten gerçek item (her biri 1 kez)
+            bag[i] = items[used]
         else
-            bag[i] = false -- boş: ya item kalmadı ya da boş olasılığı tuttu (UYDURMA YOK)
+            bag[i] = false
         end
     end
     return bag, cellCount
 end
 
--- Oyuncuya özel DÜZEN (aynı multiset, farklı sıralar)
 local function playerLayout(id, cid)
     local bag, cellCount = canonicalBag(id)
     local rng = makeRng(strHash(tostring(id) .. ':' .. tostring(cid)))
@@ -144,7 +126,6 @@ local function auctionOpen(id)
     return st == 'open' or st == 'final'
 end
 
--- NUI: mevcut scratch durumu
 lib.callback.register('teke_auction:getScratch', function(source, data)
     local player = exports.qbx_core:GetPlayer(source)
     if not player then return { ok = false, reason = 'noplayer' } end
@@ -156,18 +137,16 @@ lib.callback.register('teke_auction:getScratch', function(source, data)
         return { ok = false, reason = 'notparticipant', cellCount = (Cfg().cellCount or 6) }
     end
 
-    local bag, cellCount = playerLayout(id, cid)
-    local set = openedSet(id, cid)
-    local opened = openedCountOf(set)
+    local cellCount = Cfg().cellCount or 6
+    local map, opened = openedRows(id, cid)
 
     local cells = {}
     for i = 1, cellCount do
         local idx = i - 1
-        if set[idx] then
-            local v = bag[i]
+        local v = map[idx]
+        if v ~= nil then
             cells[#cells + 1] = {
-                index = idx,
-                opened = true,
+                index = idx, opened = true,
                 empty = (v == false),
                 item = (v ~= false) and labelOf(v) or nil
             }
@@ -176,16 +155,10 @@ lib.callback.register('teke_auction:getScratch', function(source, data)
         end
     end
 
-    return {
-        ok = true,
-        cellCount = cellCount,
-        openedCount = opened,
-        nextCost = scratchCost(opened),
-        cells = cells
-    }
+    return { ok = true, cellCount = cellCount, openedCount = opened, nextCost = scratchCost(opened), cells = cells }
 end)
 
--- NUI: bir kutuyu aç (para öde → içeriği gör)
+-- NUI: bir kutuyu aç
 lib.callback.register('teke_auction:scratchOpen', function(source, data)
     local player = exports.qbx_core:GetPlayer(source)
     if not player then return { ok = false, reason = 'noplayer' } end
@@ -197,31 +170,35 @@ lib.callback.register('teke_auction:scratchOpen', function(source, data)
     if not auctionOpen(id) then return { ok = false, reason = 'phase' } end
     if not isParticipant(id, cid) then return { ok = false, reason = 'notparticipant' } end
 
-    local bag, cellCount = playerLayout(id, cid)
+    local bag, cellCount = playerLayout(id, cid)   -- kutunun altındaki item hâlâ auction açıkken belirlenir
     if idx < 0 or idx >= cellCount then return { ok = false, reason = 'range' } end
 
-    local set = openedSet(id, cid)
-    if set[idx] then return { ok = false, reason = 'opened' } end
+    local map, opened = openedRows(id, cid)
+    if map[idx] ~= nil then return { ok = false, reason = 'opened' } end
 
-    local opened = openedCountOf(set)
     local cost = scratchCost(opened)
     if (player.PlayerData.money.bank or 0) < cost then
         return { ok = false, reason = 'money', nextCost = cost }
     end
-    player.Functions.RemoveMoney('bank', cost, 'auction-scratch')
 
-    set[idx] = true
-    local newOpened = opened + 1
     local v = bag[idx + 1]
 
+    -- önce DB'ye yaz (PK: auction_id+citizenid+cell_index → aynı kutu 2 kez açılamaz)
+    MySQL.insert.await(
+        "INSERT INTO auction_scratch (auction_id, citizenid, cell_index, item_id) VALUES (?, ?, ?, ?)",
+        { id, cid, idx, (v ~= false) and v or nil })   -- boşsa item_id = NULL
+
+    -- sonra parayı düş
+    player.Functions.RemoveMoney('bank', cost, 'auction-scratch')
+
+    local newOpened = opened + 1
     if Config.Debug then
         print(('[scratch] cid=%s auction=%s cell=%d cost=%d → %s'):format(
             cid, tostring(id), idx, cost, (v == false) and 'BOŞ' or tostring(v)))
     end
 
     return {
-        ok = true,
-        index = idx,
+        ok = true, index = idx,
         empty = (v == false),
         item = (v ~= false) and labelOf(v) or nil,
         openedCount = newOpened,
@@ -230,7 +207,7 @@ lib.callback.register('teke_auction:scratchOpen', function(source, data)
     }
 end)
 
--- Auction bittiğinde hafızayı temizlemek istersen (opsiyonel): ScratchClear(id)
+-- Auction bittiğinde DB temizleme
 function ScratchClear(id)
-    ScratchOpened[tostring(id)] = nil
+    MySQL.query.await("DELETE FROM auction_scratch WHERE auction_id = ?", { id })
 end

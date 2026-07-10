@@ -11,6 +11,7 @@ interface JoinedState {
   finish: (p: { id: string; winner?: string; paid?: number }) => void
   setResult: (id: string, result: 'won' | 'lost') => void
   clear: () => void
+  hydrate: (items: AuctionItem[]) => void
 }
 
 const withDeadline = (item: AuctionItem): AuctionItem => ({
@@ -20,7 +21,10 @@ const withDeadline = (item: AuctionItem): AuctionItem => ({
 
 export const useJoinedStore = create<JoinedState>((set) => ({
   items: [],
-
+  hydrate: (items) =>
+    set(() => ({
+      items: items.map((it) => withDeadline({ ...it })).slice(0, MAX_JOINED),
+    })),
   join: (item) =>
     set((s) => {
       const without = s.items.filter((x) => x.id !== item.id)
@@ -32,13 +36,13 @@ export const useJoinedStore = create<JoinedState>((set) => ({
       items: s.items.map((x) =>
         x.id === id
           ? {
-              ...x,
-              ...(bid !== undefined ? { bid } : {}),
-              ...(participants !== undefined ? { participants } : {}),
-              ...(endTime !== undefined
-                ? { endTime, deadline: Date.now() + toSeconds(endTime) * 1000 }
-                : {}),
-            }
+            ...x,
+            ...(bid !== undefined ? { bid } : {}),
+            ...(participants !== undefined ? { participants } : {}),
+            ...(endTime !== undefined
+              ? { endTime, deadline: Date.now() + toSeconds(endTime) * 1000 }
+              : {}),
+          }
           : x,
       ),
     })),
@@ -48,14 +52,14 @@ export const useJoinedStore = create<JoinedState>((set) => ({
       items: s.items.map((x) =>
         x.id === id
           ? {
-              ...x,
-              winner,
-              paid,
-              endTime: '00:00:00',
-              deadline: Date.now(), // artık bitti
-              result: x.result ?? 'lost',
-              decidedAt: Date.now(),
-            }
+            ...x,
+            winner,
+            paid,
+            endTime: '00:00:00',
+            deadline: Date.now(), // artık bitti
+            result: x.result ?? 'lost',
+            decidedAt: Date.now(),
+          }
           : x,
       ),
     })),

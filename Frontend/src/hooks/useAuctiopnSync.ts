@@ -23,11 +23,13 @@ export function useAuctionSync() {
   const joinedUpdateStats = useJoinedStore((s) => s.updateStats)
   const joinedFinish = useJoinedStore((s) => s.finish)
   const joinedSetResult = useJoinedStore((s) => s.setResult)
-
+  const joinedHydrate = useJoinedStore((s) => s.hydrate)
+  
   useEffect(() => {
     if (loaded) return
-    fetchNui('getSnapshot', {}, MOCK).then(setSnapshot).catch(() => {})
-  }, [loaded, setSnapshot])
+    fetchNui('getSnapshot', {}, MOCK).then(setSnapshot).catch(() => { })
+    fetchNui<AuctionItem[]>('getJoined', {}, []).then(joinedHydrate).catch(() => { })
+  }, [loaded, setSnapshot, joinedHydrate])
 
   useNuiEvent('auctionSnapshot', setSnapshot)
 

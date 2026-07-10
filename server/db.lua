@@ -268,3 +268,26 @@ function Db.SettleAuction(id)
         winnerCid = winnerCid
     }
 end
+
+
+-- Bu oyuncunun katıldığı auction'lar → restart/relog sonrası Joined sekmesini geri yükler
+function Db.GetJoined(cid)
+    local rows = MySQL.query.await([[
+    SELECT a.*, (SELECT COUNT(*) FROM auction_participants p WHERE p.auction_id=a.id) AS participants
+    FROM auctions a
+    JOIN auction_participants jp ON jp.auction_id = a.id AND jp.citizenid = ?
+    ORDER BY a.end_time DESC
+  ]], { cid })
+
+    local items = {}
+    for _, r in ipairs(rows or {}) do
+        local item = rowToItem(r)
+        item.deadline = (r.end_time or 0) * 1000        -- mutlak bitiş (ms) → sayaç doğru devam etsin
+        if r.status == 'ended' then
+            item.result = (r.winner_id == cid) and 'won' or 'lost'
+            item.decidedAt = (r.end_time or 0) * 1000
+        end
+        items[#items + 1] = item
+    end
+    return items
+end

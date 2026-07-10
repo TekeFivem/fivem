@@ -233,3 +233,7 @@ RegisterNUICallback('scratchOpen', function(data, cb)
         ok = false
     })
 end)
+
+RegisterNUICallback('getJoined', function(_, cb)
+    cb(lib.callback.await('teke_auction:getJoined', false) or {})
+end)

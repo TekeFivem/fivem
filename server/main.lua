@@ -231,3 +231,11 @@ lib.callback.register('teke_auction:getBids', function(_, data)
     end
     return out
 end)
+
+
+-- Joined sekmesini DB'den geri yükle (restart/relog sonrası)
+lib.callback.register('teke_auction:getJoined', function(source)
+    local player = exports.qbx_core:GetPlayer(source)
+    if not player then return {} end
+    return Db.GetJoined(player.PlayerData.citizenid)
+end)
