@@ -25,11 +25,14 @@ Config.Scratch = {
     cellCount = 6, -- toplam kutu sayısı
     baseCost = 250, -- ilk açılışın fiyatı
     growth = 1.6, -- her açılışta sıradaki kutu fiyatı ×growth
-    minEmpty = 1, -- en az boş kutu (auction'a göre random)
-    maxEmpty = 3, -- en fazla boş kutu (auction'a göre random)
-    useAuctionContents = true, -- itemler auction'ın contents_json'ından gelsin
-    pool = {'phone', 'tv', 'laptop', 'watch'}, -- contents boşsa yedek havuz
-    labels = { -- item id → NUI'da görünecek ad + emoji
+
+    -- BOŞLUK, içerik zenginliğine göre ölçeklenir
+    -- İçerik ne kadar ÇOK farklı item içerirse boş kutu olasılığı o kadar AZ.
+    fullnessRef = 6, -- içerik bu kadar FARKLI item içerince boşluk minimuma iner (genelde = cellCount)
+    emptyChanceMin = 0.05, -- içerik ÇOK zenginken bir kutunun boş kalma olasılığı (alt sınır)
+    emptyChanceMax = 0.60, -- içerik ÇOK azken bir kutunun boş kalma olasılığı (üst sınır)
+
+    labels = { -- item id → NUI'da görünecek ad + emoji (yalnızca gösterim; içerikte olan itemler için)
         phone = {
             name = 'Telefon',
             emoji = '📱'
@@ -113,71 +116,9 @@ Config.Hack = {
     } -- fiyat bu süre donar, kimse teklif veremez
 }
 Config.Loot = {
-    storage = {
-        bronze = {{
-            item = 'water',
-            min = 1,
-            max = 3
-        }, {
-            item = 'bread',
-            min = 1,
-            max = 2
-        }},
-        silver = {{
-            item = 'phone',
-            min = 1,
-            max = 1
-        }, {
-            item = 'goldbar',
-            min = 1,
-            max = 2
-        }},
-        gold = {{
-            item = 'goldbar',
-            min = 1,
-            max = 2
-        }, {
-            item = 'rolex',
-            min = 1,
-            max = 1
-        }}
-    },
 
-    container = {
-        bronze = {{
-            item = 'water',
-            min = 2,
-            max = 5
-        }},
-        silver = {{
-            item = 'goldbar',
-            min = 1,
-            max = 1
-        }},
-        gold = {{
-            item = 'goldbar',
-            min = 2,
-            max = 4
-        }}
-    },
 
-    itembox = {
-        bronze = {{
-            item = 'lockpick',
-            min = 1,
-            max = 2
-        }},
-        silver = {{
-            item = 'phone',
-            min = 1,
-            max = 2
-        }},
-        gold = {{
-            item = 'diamond',
-            min = 1,
-            max = 3
-        }}
-    }
+
 }
 
 -- ==== Faz B: Vault ayarları ====

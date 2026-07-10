@@ -3,16 +3,13 @@
 -- • İçerik seti (hangi itemler + kaç boş) tüm katılımcılar için AYNI (auction seed).
 -- • Kutulardaki sıralar her oyuncu için FARKLI (auction+cid seed ile karıştırılır).
 -- • Kazanç yok; para ödeyip içeriği görürsün. Her açılışta sıradaki fiyat artar.
-local function Cfg()
-    return Config.Scratch or {}
-end
+
+local function Cfg() return Config.Scratch or {} end
 
 -- Deterministik PRNG (Park–Miller LCG) → aynı seed = aynı sonuç
 local function makeRng(seed)
     local s = math.floor(seed) % 2147483647
-    if s <= 0 then
-        s = s + 2147483646
-    end
+    if s <= 0 then s = s + 2147483646 end
     return function()
         s = (s * 16807) % 2147483647
         return s / 2147483647
@@ -48,9 +45,7 @@ end
 
 local function openedCountOf(set)
     local n = 0
-    for _ in pairs(set) do
-        n = n + 1
-    end
+    for _ in pairs(set) do n = n + 1 end
     return n
 end
 
@@ -90,43 +85,41 @@ local function auctionItems(id)
 end
 
 -- Auction için KANONİK içerik seti (herkes için AYNI multiset)
+-- Kural: SADECE auction içeriğindeki itemler; her item en fazla 1 kez.
+-- Havuz/uydurma YOK. İçerik azsa → boş kutular. Boşluk olasılığı içerik zenginliğine göre.
 local function canonicalBag(id)
     local c = Cfg()
     local cellCount = c.cellCount or 6
     local rng = makeRng(tonumber(id) or strHash(tostring(id)))
 
-    -- kaynak item havuzu
-    local source
-    if c.useAuctionContents ~= false then
-        source = auctionItems(id)
-        if #source == 0 then
-            source = c.pool or {}
-        end
-    else
-        source = c.pool or {}
-    end
+    -- yalnızca auction içeriğindeki DISTINCT itemler (karışık sırayla)
+    local items = auctionItems(id)
+    shuffle(items, rng)
+    local D = #items
 
-    -- boş kutu sayısı (min..max) → dolu = cellCount - boş
-    local minE = c.minEmpty or 0
-    local maxE = c.maxEmpty or 0
-    if maxE < minE then
-        maxE = minE
+    -- içerik doygunluğu 0..1 : içerik ne kadar fazlaysa 1'e yaklaşır
+    local ref = c.fullnessRef or cellCount
+    if ref < 1 then
+        ref = 1
     end
-    local empties = minE + math.floor(rng() * (maxE - minE + 1))
-    if empties > cellCount then
-        empties = cellCount
-    end
-    local filled = cellCount - empties
+    local fullness = math.min(D, ref) / ref
 
-    -- dolu kutuları kaynaktan örnekle (kaynak boşsa hepsi boş kalır)
+    -- her doldurulabilir kutunun boş kalma olasılığı:
+    -- fullness→1 (içerik zengin) → emptyChanceMin, fullness→0 (içerik az) → emptyChanceMax
+    local emin = c.emptyChanceMin or 0.0
+    local emax = c.emptyChanceMax or 0.6
+    local emptyChance = emin + (emax - emin) * (1 - fullness)
+
+    -- kutuları doldur: item varsa ve boş olasılığı tutmadıysa gerçek item, aksi halde boş
     local bag = {}
-    if #source > 0 then
-        for _ = 1, filled do
-            bag[#bag + 1] = source[math.floor(rng() * #source) + 1]
+    local used = 0
+    for i = 1, cellCount do
+        if used < D and rng() >= emptyChance then
+            used = used + 1
+            bag[i] = items[used] -- içerikten gerçek item (her biri 1 kez)
+        else
+            bag[i] = false -- boş: ya item kalmadı ya da boş olasılığı tuttu (UYDURMA YOK)
         end
-    end
-    while #bag < cellCount do
-        bag[#bag + 1] = false -- boş kutu
     end
     return bag, cellCount
 end
@@ -140,8 +133,8 @@ local function playerLayout(id, cid)
 end
 
 local function isParticipant(id, cid)
-    local r = MySQL.query.await("SELECT 1 FROM auction_participants WHERE auction_id = ? AND citizenid = ? LIMIT 1",
-        {id, cid})
+    local r = MySQL.query.await(
+        "SELECT 1 FROM auction_participants WHERE auction_id = ? AND citizenid = ? LIMIT 1", {id, cid})
     return (r and r[1]) and true or false
 end
 
@@ -154,27 +147,13 @@ end
 -- NUI: mevcut scratch durumu
 lib.callback.register('teke_auction:getScratch', function(source, data)
     local player = exports.qbx_core:GetPlayer(source)
-    if not player then
-        return {
-            ok = false,
-            reason = 'noplayer'
-        }
-    end
+    if not player then return { ok = false, reason = 'noplayer' } end
     local cid = player.PlayerData.citizenid
     local id = data and data.auctionId
-    if not id then
-        return {
-            ok = false,
-            reason = 'args'
-        }
-    end
+    if not id then return { ok = false, reason = 'args' } end
 
     if not isParticipant(id, cid) then
-        return {
-            ok = false,
-            reason = 'notparticipant',
-            cellCount = (Cfg().cellCount or 6)
-        }
+        return { ok = false, reason = 'notparticipant', cellCount = (Cfg().cellCount or 6) }
     end
 
     local bag, cellCount = playerLayout(id, cid)
@@ -193,10 +172,7 @@ lib.callback.register('teke_auction:getScratch', function(source, data)
                 item = (v ~= false) and labelOf(v) or nil
             }
         else
-            cells[#cells + 1] = {
-                index = idx,
-                opened = false
-            }
+            cells[#cells + 1] = { index = idx, opened = false }
         end
     end
 
@@ -212,59 +188,25 @@ end)
 -- NUI: bir kutuyu aç (para öde → içeriği gör)
 lib.callback.register('teke_auction:scratchOpen', function(source, data)
     local player = exports.qbx_core:GetPlayer(source)
-    if not player then
-        return {
-            ok = false,
-            reason = 'noplayer'
-        }
-    end
+    if not player then return { ok = false, reason = 'noplayer' } end
     local cid = player.PlayerData.citizenid
     local id = data and data.auctionId
     local idx = data and tonumber(data.cellIndex)
-    if not id or idx == nil then
-        return {
-            ok = false,
-            reason = 'args'
-        }
-    end
+    if not id or idx == nil then return { ok = false, reason = 'args' } end
 
-    if not auctionOpen(id) then
-        return {
-            ok = false,
-            reason = 'phase'
-        }
-    end
-    if not isParticipant(id, cid) then
-        return {
-            ok = false,
-            reason = 'notparticipant'
-        }
-    end
+    if not auctionOpen(id) then return { ok = false, reason = 'phase' } end
+    if not isParticipant(id, cid) then return { ok = false, reason = 'notparticipant' } end
 
     local bag, cellCount = playerLayout(id, cid)
-    if idx < 0 or idx >= cellCount then
-        return {
-            ok = false,
-            reason = 'range'
-        }
-    end
+    if idx < 0 or idx >= cellCount then return { ok = false, reason = 'range' } end
 
     local set = openedSet(id, cid)
-    if set[idx] then
-        return {
-            ok = false,
-            reason = 'opened'
-        }
-    end
+    if set[idx] then return { ok = false, reason = 'opened' } end
 
     local opened = openedCountOf(set)
     local cost = scratchCost(opened)
     if (player.PlayerData.money.bank or 0) < cost then
-        return {
-            ok = false,
-            reason = 'money',
-            nextCost = cost
-        }
+        return { ok = false, reason = 'money', nextCost = cost }
     end
     player.Functions.RemoveMoney('bank', cost, 'auction-scratch')
 
@@ -273,8 +215,8 @@ lib.callback.register('teke_auction:scratchOpen', function(source, data)
     local v = bag[idx + 1]
 
     if Config.Debug then
-        print(('[scratch] cid=%s auction=%s cell=%d cost=%d → %s'):format(cid, tostring(id), idx, cost,
-            (v == false) and 'BOŞ' or tostring(v)))
+        print(('[scratch] cid=%s auction=%s cell=%d cost=%d → %s'):format(
+            cid, tostring(id), idx, cost, (v == false) and 'BOŞ' or tostring(v)))
     end
 
     return {
