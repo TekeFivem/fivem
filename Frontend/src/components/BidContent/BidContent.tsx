@@ -67,7 +67,7 @@ export const BidContent = ({ item, mode = 'live', onBack }: Props) => {
       <div className={styles.infoArea}><BidInfo item={item} /></div>
       <div className={styles.bidArea}><BidPanel item={item} phase={phase} /></div>
       <div className={styles.hackArea}><BidHack /></div>
-      <div className={styles.chatArea}><BidChat /></div>
+      <div className={styles.chatArea}><BidChat auctionId={item.id} /></div>
     </div>
   )
 }

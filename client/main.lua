@@ -237,3 +237,22 @@ end)
 RegisterNUICallback('getJoined', function(_, cb)
     cb(lib.callback.await('teke_auction:getJoined', false) or {})
 end)
+
+-- Chat (NUI → server)
+RegisterNUICallback('getParticipants', function(data, cb)
+    cb(lib.callback.await('teke_auction:getParticipants', false, data) or {})
+end)
+RegisterNUICallback('getChat', function(data, cb)
+    cb(lib.callback.await('teke_auction:getChat', false, data) or {})
+end)
+RegisterNUICallback('sendChat', function(data, cb)
+    cb(lib.callback.await('teke_auction:sendChat', false, data) or { ok = false })
+end)
+
+-- Server → client: yeni mesaj
+RegisterNetEvent('teke_auction:chat', function(d)
+    SendNUIMessage({
+        action = 'auctionChat',
+        data = d
+    })
+end)

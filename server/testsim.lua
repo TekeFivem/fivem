@@ -327,3 +327,59 @@ RegisterCommand('revealme', function(source, args)
     })
     print(('[hacktest] reveal #%s → %s'):format(tostring(id), row[1].bidder_name))
 end, false)
+
+
+-- ---- CHAT TESTİ ----
+local SIM_CHAT_LINES = {
+    'bu kutu bende olacak',
+    'fiyatı fazla yükseltmeyin arkadaşlar',
+    'kutulardan ne çıktı gören var mı',
+    'ben bu turu pas geçiyorum',
+    'son saniyede basarım :)',
+    'bu tier bronz, değmez bence',
+    'katılan çok olunca fiyat uçuyor',
+}
+
+-- /simchat <auctionId> [mesaj...]  → rastgele bir bot yazar (mesaj verirsen onu yazar)
+RegisterCommand('simchat', function(_, args)
+    local id = tonumber(args[1])
+    if not id then print('kullanım: /simchat <auctionId> [mesaj]'); return end
+    local name = BOT_NAMES[math.random(#BOT_NAMES)]
+    local message = args[2] and table.concat(args, ' ', 2) or SIM_CHAT_LINES[math.random(#SIM_CHAT_LINES)]
+    Chat.botSay(id, name, message)
+    print(('[sim] chat #%d %s: %s'):format(id, name, message))
+end, false)
+
+-- /simtag <auctionId>  → bir bot SENİ etiketler (mentionMe / msgMe highlight testi)
+RegisterCommand('simtag', function(source, args)
+    local id = tonumber(args[1])
+    if not id then print('kullanım: /simtag <auctionId>'); return end
+    local player = exports.qbx_core:GetPlayer(source)
+    if not player then return end
+    local myName = Payouts.nameOf(player.PlayerData.citizenid)
+    local name = BOT_NAMES[math.random(#BOT_NAMES)]
+    Chat.botSay(id, name, ('@%s bu kutuya girme, bende kalsın :)'):format(myName))
+    print(('[sim] tag #%d %s → @%s'):format(id, name, myName))
+end, false)
+
+-- /simchatloop <auctionId> [sn]  → aç/kapat: botlar otomatik yazsın (akan sohbet)
+local chatLoops = {}
+RegisterCommand('simchatloop', function(_, args)
+    local id = tonumber(args[1])
+    if not id then print('kullanım: /simchatloop <auctionId> [sn]'); return end
+    if chatLoops[id] then
+        chatLoops[id] = nil
+        print(('[sim] chat loop #%d durdu'):format(id))
+        return
+    end
+    local sec = tonumber(args[2]) or 5
+    chatLoops[id] = true
+    CreateThread(function()
+        while chatLoops[id] do
+            local name = BOT_NAMES[math.random(#BOT_NAMES)]
+            Chat.botSay(id, name, SIM_CHAT_LINES[math.random(#SIM_CHAT_LINES)])
+            Wait(sec * 1000)
+        end
+    end)
+    print(('[sim] chat loop #%d her %d sn'):format(id, sec))
+end, false)
