@@ -23,14 +23,14 @@ Config.Tiers = {
 }
 Config.Scratch = {
     cellCount = 6, -- toplam kutu sayısı
-    baseCost = 250, -- ilk açılışın fiyatı
-    growth = 1.6, -- her açılışta sıradaki kutu fiyatı ×growth
+    baseCost = 50, -- ilk açılışın fiyatı
+    growth = 1.5, -- her açılışta sıradaki kutu fiyatı ×growth
 
     -- BOŞLUK, içerik zenginliğine göre ölçeklenir
     -- İçerik ne kadar ÇOK farklı item içerirse boş kutu olasılığı o kadar AZ.
-    fullnessRef = 6, -- içerik bu kadar FARKLI item içerince boşluk minimuma iner (genelde = cellCount)
-    emptyChanceMin = 0.05, -- içerik ÇOK zenginken bir kutunun boş kalma olasılığı (alt sınır)
-    emptyChanceMax = 0.60, -- içerik ÇOK azken bir kutunun boş kalma olasılığı (üst sınır)
+    fullnessRef = 6,
+    emptyChanceMin = 0.05,
+    emptyChanceMax = 0.60,
 
     labels = { -- item id → NUI'da görünecek ad + emoji (yalnızca gösterim; içerikte olan itemler için)
         phone = {
@@ -114,11 +114,6 @@ Config.Hack = {
         cost = 6000,
         duration = 15
     } -- fiyat bu süre donar, kimse teklif veremez
-}
-Config.Loot = {
-
-
-
 }
 
 -- ==== Faz B: Vault ayarları ====

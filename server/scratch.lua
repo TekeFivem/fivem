@@ -82,28 +82,42 @@ local function canonicalBag(id)
     local cellCount = c.cellCount or 6
     local rng = makeRng(tonumber(id) or strHash(tostring(id)))
 
+    -- yalnızca auction içeriğindeki DISTINCT itemler (karışık sırayla)
     local items = auctionItems(id)
     shuffle(items, rng)
     local D = #items
 
-    local ref = c.fullnessRef or cellCount
-    if ref < 1 then ref = 1 end
-    local fullness = math.min(D, ref) / ref
+    -- Kutu başına DOLU olma olasılığı, FARKLI item sayısına (D) göre ölçeklenir.
+    -- fillChance = min(1, D / fillRef) → fillRef=30: D=6→%20, 12→%40, 24→%80, 30+→%100
+    local fillRef = c.fillRef or 30
+    if fillRef < 1 then fillRef = 1 end
+    local fillChance = math.min(1, D / fillRef)
 
-    local emin = c.emptyChanceMin or 0.0
-    local emax = c.emptyChanceMax or 0.6
-    local emptyChance = emin + (emax - emin) * (1 - fullness)
-
+    -- kutuları doldur (her item en fazla 1 kez; UYDURMA YOK)
     local bag = {}
     local used = 0
     for i = 1, cellCount do
-        if used < D and rng() >= emptyChance then
+        if used < D and rng() < fillChance then
             used = used + 1
-            bag[i] = items[used]
+            bag[i] = items[used]   -- içerikten gerçek item
         else
-            bag[i] = false
+            bag[i] = false         -- boş kutu
         end
     end
+
+    -- "en az minFilled dolu" garanti (içerik izin verdiği ölçüde)
+    local minFilled = c.minFilled or 1
+    local target = math.min(minFilled, D, cellCount)
+    if used < target then
+        for i = 1, cellCount do
+            if used >= target then break end
+            if bag[i] == false then
+                used = used + 1
+                bag[i] = items[used]
+            end
+        end
+    end
+
     return bag, cellCount
 end
 
