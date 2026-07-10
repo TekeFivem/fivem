@@ -1,3 +1,62 @@
+-- Çıkma şansları (config'te tanımlı). GenerateContents bunları kullanır.
+-- chance = o item'in auction içeriğine girme yüzdesi (0-100)
+Config.LootRoll = {
+    -- tier bazlı VARSAYILAN şans + auction başına item TÜRÜ sayısı sınırları
+    bronze = {
+        chance = 50,
+        minTypes = 3,
+        maxTypes = 8
+    },
+    silver = {
+        chance = 38,
+        minTypes = 3,
+        maxTypes = 7
+    },
+    gold = {
+        chance = 30,
+        minTypes = 2,
+        maxTypes = 6
+    }
+}
+
+-- Belirli itemler için ÖZEL şans (tier varsayılanını ezer). Değerli/nadir olanlar düşük.
+Config.LootRarity = {
+    -- 💰 değerli
+    goldbar = 22,
+    rolex = 18,
+    diamond_ring = 16,
+    goldchain = 30,
+    -- 💻 hack/güvenlik
+    cryptostick = 20,
+    trojan_usb = 12,
+    gatecrack = 12,
+    security_card_01 = 8,
+    security_card_02 = 8,
+    advancedlockpick = 22,
+    advancedrepairkit = 18,
+    drill = 12,
+    thermite = 10,
+    -- 🧪 uyuşturucu (brick/ağır)
+    coke_brick = 10,
+    coke_small_brick = 18,
+    weed_brick = 12,
+    meth = 25,
+    oxy = 25,
+    -- 🤿 dalış / mercan
+    diving_gear = 12,
+    diving_fill = 20,
+    antipatharia_coral = 18,
+    dendrogyra_coral = 18,
+    -- 🛡️ diğer nadir
+    armour = 25,
+    nitrous = 30,
+    jammer = 20,
+    harness = 25,
+    handcuffs = 25,
+    firework4 = 20,
+    filled_evidence_bag = 20
+    -- burada olmayan itemler tier varsayılan şansını kullanır
+}
 Config.Loot = {
 
     ------------------------------------------------------------------

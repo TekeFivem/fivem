@@ -147,16 +147,63 @@ end
 
 function Db.GenerateContents(kind, tier)
     local pool = (Config.Loot[kind] or {})[tier]
-    if not pool then
+    if not pool or #pool == 0 then
         return {}
     end
-    local out = {}
-    for _, e in ipairs(pool) do
-        out[#out + 1] = {
-            item = e.item,
-            count = math.random(e.min, e.max)
-        }
+
+    local roll = (Config.LootRoll and Config.LootRoll[tier]) or {}
+    local baseChance = roll.chance or 40
+    local minTypes = roll.minTypes or 1
+    local maxTypes = roll.maxTypes or 6
+    local rarity = Config.LootRarity or {}
+
+    -- havuzu karıştır (her auction farklı sıra → farklı seçim)
+    local idx = {}
+    for i = 1, #pool do
+        idx[i] = i
     end
+    for i = #idx, 2, -1 do
+        local j = math.random(i)
+        idx[i], idx[j] = idx[j], idx[i]
+    end
+
+    -- 1) şans zarı (maxTypes ile sınırlı)
+    local out = {}
+    for _, k in ipairs(idx) do
+        if #out >= maxTypes then
+            break
+        end
+        local e = pool[k]
+        local chance = e.chance or rarity[e.item] or baseChance
+        if math.random(100) <= chance then
+            out[#out + 1] = {
+                item = e.item,
+                count = math.random(e.min or 1, e.max or 1)
+            }
+        end
+    end
+
+    -- 2) minTypes garanti (auction boş/az kalmasın): kalan itemlerden tamamla
+    if #out < minTypes then
+        local have = {}
+        for _, o in ipairs(out) do
+            have[o.item] = true
+        end
+        for _, k in ipairs(idx) do
+            if #out >= minTypes then
+                break
+            end
+            local e = pool[k]
+            if not have[e.item] then
+                have[e.item] = true
+                out[#out + 1] = {
+                    item = e.item,
+                    count = math.random(e.min or 1, e.max or 1)
+                }
+            end
+        end
+    end
+
     return out
 end
 
