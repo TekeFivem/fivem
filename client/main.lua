@@ -1,5 +1,7 @@
 local isOpen = false
 local vaultLocGen = 0
+local vaultBlip = nil
+
 local function openTablet()
     if isOpen then
         return
@@ -11,20 +13,13 @@ local function openTablet()
         data = true
     })
 end
-
 local function closeTablet()
-    if not isOpen then
-        return
-    end
+    if not isOpen then return end
     isOpen = false
-    vaultLocGen = vaultLocGen + 1  
+    clearVaultLoc()
     SetNuiFocus(false, false)
-    SendNUIMessage({
-        action = 'setVisible',
-        data = false
-    })
+    SendNUIMessage({ action = 'setVisible', data = false })
 end
-
 -- Server: tablet item kullanıldı
 RegisterNetEvent('teke_auction:open', function()
     openTablet()
@@ -335,31 +330,64 @@ RegisterNetEvent('teke_auction:lootRefresh', function()
     SendNUIMessage({ action = 'lootRefresh' })
 end)
 
--- Vault: "Kendin Temizle" için lokasyon işaretle + yakınlık takibi
 RegisterNUICallback('vaultMarkLocation', function(data, cb)
     local loc = data and data.loc
     local id  = data and data.id
     if not loc or loc.x == nil then cb({ ok = false }); return end
 
-    SetNewWaypoint(loc.x + 0.0, loc.y + 0.0)
-
-    vaultLocGen = vaultLocGen + 1   -- artık üstteki local'i kullanıyor (local YOK)
-    local myGen  = vaultLocGen
+    clearVaultLoc()
     local target = vec3(loc.x + 0.0, loc.y + 0.0, loc.z + 0.0)
+
+    -- Harita: GPS rotası + kalıcı blip
+    SetNewWaypoint(target.x, target.y)
+    vaultBlip = AddBlipForCoord(target.x, target.y, target.z)
+    SetBlipSprite(vaultBlip, 478)          -- kutu ikonu
+    SetBlipColour(vaultBlip, 5)            -- sarı
+    SetBlipScale(vaultBlip, 0.9)
+    SetBlipAsShortRange(vaultBlip, false)
+    BeginTextCommandSetBlipName('STRING')
+    AddTextComponentSubstringPlayerName('Vault Kutusu')
+    EndTextCommandSetBlipName(vaultBlip)
+
+    vaultLocGen = vaultLocGen + 1
+    local myGen  = vaultLocGen
     local radius = ((Config.Vault and Config.Vault.radius) or 3.0) + 2.0
     local wasAt  = nil
 
     CreateThread(function()
         while myGen == vaultLocGen do
-            local ped = PlayerPedId()
-            local at  = ped ~= 0 and #(GetEntityCoords(ped) - target) <= radius
+            local ped    = PlayerPedId()
+            local coords = GetEntityCoords(ped)
+            local dist   = #(coords - target)
+            local near   = dist <= 20.0
+
+            if near then
+                -- yerde nerede duracağını gösteren silindir marker
+                DrawMarker(1, target.x, target.y, target.z - 0.98,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    1.5, 1.5, 0.6,
+                    60, 170, 255, 130,
+                    false, true, 2, false, nil, nil, false)
+            end
+
+            local at = dist <= radius
             if at ~= wasAt then
                 wasAt = at
                 SendNUIMessage({ action = 'vaultAtLocation', data = { id = id, at = at } })
             end
-            Wait(750)
+
+            Wait(near and 0 or 500)   -- marker için near iken her frame, uzakta 500ms
         end
     end)
 
     cb({ ok = true })
 end)
+
+
+local function clearVaultLoc()
+    vaultLocGen = vaultLocGen + 1        -- çalışan takip thread'ini durdur
+    if vaultBlip then
+        RemoveBlip(vaultBlip)
+        vaultBlip = nil
+    end
+end

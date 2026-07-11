@@ -23,6 +23,8 @@ export interface AuctionItem {
   deadline?: number
   cleaned?: boolean
   loc?: { x: number; y: number; z: number } // vault: kutu konumu (kendin temizle waypoint)
+  opened?: boolean   // vault: kutu açıldı mı (temizlendi, loot bekliyor)
+  pending?: number   // vault: işlenmemiş loot sayısı
 }
 export interface AuctionCardProps {
   name: string

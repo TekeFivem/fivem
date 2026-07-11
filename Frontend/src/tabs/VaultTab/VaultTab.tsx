@@ -14,44 +14,81 @@ export const VaultTab = () => {
   const [revealBoxId, setRevealBoxId] = useState<string | null>(null)
   const active = items.find((i) => i.id === activeId) ?? null
 
-  const load = () => fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => { })
-  useEffect(() => { load() }, [])
+  const load = () =>
+    fetchNui<AuctionItem[]>('getVault', {}, [])
+      .then(setItems)
+      .catch(() => {})
 
-  useNuiEvent<{ id: string }>('vaultBoxOpened', ({ id }) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, cleaned: true, endTime: '00:00:00' } : i))),
-  )
+  useEffect(() => {
+    load()
+  }, [])
+
+  // (a) vaultBoxOpened artık sadece listeyi tazeliyor
+  useNuiEvent('vaultBoxOpened', () => load())
   useNuiEvent('vaultRefresh', () => load())
 
   const handleAction = (id: string, action: VaultAction) => {
     switch (action.type) {
       case 'cleanSelf':
       case 'cleaner':
-        fetchNui<{ ok: boolean; reason?: string }>('cleanBox', {
-          id,
-          method: action.type === 'cleanSelf' ? 'self' : 'cleaner',
-          tier: action.type === 'cleaner' ? action.tier : undefined,
-        }, { ok: true })
+        fetchNui<{ ok: boolean; reason?: string }>(
+          'cleanBox',
+          {
+            id,
+            method: action.type === 'cleanSelf' ? 'self' : 'cleaner',
+            tier: action.type === 'cleaner' ? action.tier : undefined,
+          },
+          { ok: true },
+        )
           .then((res) => {
-            if (res?.ok) { setActiveId(null); setRevealBoxId(id) }
-            else console.warn('cleanBox reddedildi:', res?.reason)
-          }).catch(() => { })
+            if (res?.ok) {
+              setActiveId(null)
+              setRevealBoxId(id)
+            } else console.warn('cleanBox reddedildi:', res?.reason)
+          })
+          .catch(() => {})
         break
       case 'sellSystem':
         fetchNui<{ ok: boolean }>('vaultSellSystem', { id }, { ok: true })
-          .then((res) => { if (res?.ok) { setActiveId(null); load() } }).catch(() => { })
+          .then((res) => {
+            if (res?.ok) {
+              setActiveId(null)
+              load()
+            }
+          })
+          .catch(() => {})
         break
       case 'sellPlayer':
-        fetchNui<{ ok: boolean }>('vaultSellPlayer', { id, price: action.price }, { ok: true })
-          .then((res) => { if (res?.ok) setActiveId(null) }).catch(() => { })
+        fetchNui<{ ok: boolean }>(
+          'vaultSellPlayer',
+          { id, price: action.price },
+          { ok: true },
+        )
+          .then((res) => {
+            if (res?.ok) setActiveId(null)
+          })
+          .catch(() => {})
         break
       case 'insurance':
-        fetchNui<{ ok: boolean }>('vaultInsure', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
+        fetchNui<{ ok: boolean }>('vaultInsure', { id }, { ok: true })
+          .then((r) => {
+            if (r?.ok) load()
+          })
+          .catch(() => {})
         break
       case 'security':
-        fetchNui<{ ok: boolean }>('vaultSecure', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
+        fetchNui<{ ok: boolean }>('vaultSecure', { id }, { ok: true })
+          .then((r) => {
+            if (r?.ok) load()
+          })
+          .catch(() => {})
         break
       case 'extend':
-        fetchNui<{ ok: boolean }>('vaultExtend', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
+        fetchNui<{ ok: boolean }>('vaultExtend', { id }, { ok: true })
+          .then((r) => {
+            if (r?.ok) load()
+          })
+          .catch(() => {})
         break
     }
   }
@@ -64,7 +101,12 @@ export const VaultTab = () => {
         variant="vault"
         timeOptions={VAULT_TIME_OPTIONS}
         timeUnitSeconds={3600}
-        onAction={(item) => setActiveId(item.id)}
+        // (b) pending loot varsa reveal modal açılıyor
+        onAction={(item) =>
+          (item.pending ?? 0) > 0
+            ? setRevealBoxId(item.id)
+            : setActiveId(item.id)
+        }
       />
       {active && (
         <VaultActionModal
@@ -76,7 +118,10 @@ export const VaultTab = () => {
       {revealBoxId && (
         <CleanRevealModal
           boxId={revealBoxId}
-          onClose={() => { setRevealBoxId(null); load() }}
+          onClose={() => {
+            setRevealBoxId(null)
+            load()
+          }}
         />
       )}
     </>
