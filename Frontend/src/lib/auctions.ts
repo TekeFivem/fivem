@@ -20,8 +20,9 @@ export interface AuctionItem {
   decidedAt?: number // joined: sonucun belli olduğu an (sıralama için)
   estValue?: number       // vault: tahmini değer (alt-sol)
   security?: VaultSecurity // vault: güvenlik durumu (alt-sağ)
-  deadline?:number
-  cleaned?:boolean
+  deadline?: number
+  cleaned?: boolean
+  loc?: { x: number; y: number; z: number } // vault: kutu konumu (kendin temizle waypoint)
 }
 export interface AuctionCardProps {
   name: string
@@ -42,9 +43,11 @@ export interface AuctionCardProps {
   estValue?: number
   security?: VaultSecurity
   onAction?: () => void // vault: Action butonu (modal açacak)
-  bare?:boolean
-  cleaned?:boolean
+  bare?: boolean
+  cleaned?: boolean
+
 }
+
 
 // "hh:mm:ss" -> saniye
 export const toSeconds = (t: string) => {

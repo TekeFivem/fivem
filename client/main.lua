@@ -1,5 +1,5 @@
 local isOpen = false
-
+local vaultLocGen = 0
 local function openTablet()
     if isOpen then
         return
@@ -17,6 +17,7 @@ local function closeTablet()
         return
     end
     isOpen = false
+    vaultLocGen = vaultLocGen + 1  
     SetNuiFocus(false, false)
     SendNUIMessage({
         action = 'setVisible',
@@ -332,4 +333,33 @@ RegisterNUICallback('getLoot', function(_, cb)
 end)
 RegisterNetEvent('teke_auction:lootRefresh', function()
     SendNUIMessage({ action = 'lootRefresh' })
+end)
+
+-- Vault: "Kendin Temizle" için lokasyon işaretle + yakınlık takibi
+RegisterNUICallback('vaultMarkLocation', function(data, cb)
+    local loc = data and data.loc
+    local id  = data and data.id
+    if not loc or loc.x == nil then cb({ ok = false }); return end
+
+    SetNewWaypoint(loc.x + 0.0, loc.y + 0.0)
+
+    vaultLocGen = vaultLocGen + 1   -- artık üstteki local'i kullanıyor (local YOK)
+    local myGen  = vaultLocGen
+    local target = vec3(loc.x + 0.0, loc.y + 0.0, loc.z + 0.0)
+    local radius = ((Config.Vault and Config.Vault.radius) or 3.0) + 2.0
+    local wasAt  = nil
+
+    CreateThread(function()
+        while myGen == vaultLocGen do
+            local ped = PlayerPedId()
+            local at  = ped ~= 0 and #(GetEntityCoords(ped) - target) <= radius
+            if at ~= wasAt then
+                wasAt = at
+                SendNUIMessage({ action = 'vaultAtLocation', data = { id = id, at = at } })
+            end
+            Wait(750)
+        end
+    end)
+
+    cb({ ok = true })
 end)
