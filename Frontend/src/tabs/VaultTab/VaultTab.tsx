@@ -1,54 +1,57 @@
 import { useEffect, useState } from 'react'
 import { AuctionTab } from '../../components/AuctionTab/AuctionTab'
-import { VaultActionModal } from '../../components/VaultActionModal/VaultActionModal'
+import { VaultActionModal, type VaultAction } from '../../components/VaultActionModal/VaultActionModal'
+
 import { useVaultFiltersStore } from '../../store/createFiltersStore'
 import { VAULT_TIME_OPTIONS, type AuctionItem } from '../../lib/auctions'
 import { fetchNui } from '../../lib/fetchNui'
 import { useNuiEvent } from '../../hooks/useNuiEvent'
-import type { VaultAction } from '../../components/VaultActionModal/VaultActionModal'
+import { CleanRevealModal } from '../../components/CleanRevealModal/CleanRevealModal'
 
 export const VaultTab = () => {
   const [items, setItems] = useState<AuctionItem[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [revealBoxId, setRevealBoxId] = useState<string | null>(null)
   const active = items.find((i) => i.id === activeId) ?? null
 
-  // sunucudan vault kutularını yükle (dev'de boş dizi mock)
-  const load = () =>
-    fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => { })
+  const load = () => fetchNui<AuctionItem[]>('getVault', {}, []).then(setItems).catch(() => { })
   useEffect(() => { load() }, [])
 
-  // kutu tamamen boşaldığında sunucu haber verir → listeden çıkar
-  // kutu boşaldığında sunucu haber verir → listeden ÇIKARMA, clean maske ile bırak
   useNuiEvent<{ id: string }>('vaultBoxOpened', ({ id }) =>
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, cleaned: true, endTime: '00:00:00' } : i)),
-    ),
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, cleaned: true, endTime: '00:00:00' } : i))),
   )
+  useNuiEvent('vaultRefresh', () => load())
 
   const handleAction = (id: string, action: VaultAction) => {
     switch (action.type) {
+      case 'cleanSelf':
       case 'cleaner':
-      case 'cleanSelf': {
-        // "Kendin Temizle" → sunucu: lokasyon + sahiplik + stash aç
-        fetchNui<{ ok: boolean; reason?: string }>('openBox', { id })
+        fetchNui<{ ok: boolean; reason?: string }>('cleanBox', {
+          id,
+          method: action.type === 'cleanSelf' ? 'self' : 'cleaner',
+          tier: action.type === 'cleaner' ? action.tier : undefined,
+        }, { ok: true })
           .then((res) => {
-            if (res?.ok) {
-              setActiveId(null) // stash açıldı; kutu boşalınca 'vaultBoxOpened' gelir
-            } else {
-              // TODO: kullanıcıya toast: res?.reason ('toofar' | 'expired' | 'notfound' ...)
-              console.warn('openBox reddedildi:', res?.reason)
-            }
-          })
-          .catch(() => { })
+            if (res?.ok) { setActiveId(null); setRevealBoxId(id) }
+            else console.warn('cleanBox reddedildi:', res?.reason)
+          }).catch(() => { })
         break
-      }
-      // Sonraki fazlar (satış / sigorta / güvenlik / uzatma):
-      case 'insurance':
-      case 'security':
-      case 'extend':
       case 'sellSystem':
+        fetchNui<{ ok: boolean }>('vaultSellSystem', { id }, { ok: true })
+          .then((res) => { if (res?.ok) { setActiveId(null); load() } }).catch(() => { })
+        break
       case 'sellPlayer':
-      default:
+        fetchNui<{ ok: boolean }>('vaultSellPlayer', { id, price: action.price }, { ok: true })
+          .then((res) => { if (res?.ok) setActiveId(null) }).catch(() => { })
+        break
+      case 'insurance':
+        fetchNui<{ ok: boolean }>('vaultInsure', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
+        break
+      case 'security':
+        fetchNui<{ ok: boolean }>('vaultSecure', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
+        break
+      case 'extend':
+        fetchNui<{ ok: boolean }>('vaultExtend', { id }, { ok: true }).then((r) => { if (r?.ok) load() }).catch(() => { })
         break
     }
   }
@@ -68,6 +71,12 @@ export const VaultTab = () => {
           item={active}
           onClose={() => setActiveId(null)}
           onAction={(action) => handleAction(active.id, action)}
+        />
+      )}
+      {revealBoxId && (
+        <CleanRevealModal
+          boxId={revealBoxId}
+          onClose={() => { setRevealBoxId(null); load() }}
         />
       )}
     </>

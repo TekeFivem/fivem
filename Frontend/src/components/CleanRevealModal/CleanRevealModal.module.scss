@@ -1,0 +1,88 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+.backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+.modal {
+  @include metallic-surface(160deg);
+  width: 620px; max-width: 92vw; max-height: 88vh; overflow: auto;
+  padding: 14px; border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+.head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.title {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: #1c1f25;
+}
+.close {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 16px; color: #1c1f25; line-height: 1;
+}
+.hint { margin: 0 0 12px; font-size: 12px; color: #2c2f36; opacity: 0.85; }
+.empty { padding: 30px; text-align: center; color: #565b66; }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.slot { position: relative; border-radius: 6px; }
+
+/* Blurlu (tanımsız) kart */
+.blurred {
+  height: 118px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px dashed rgba(0, 0, 0, 0.45); border-radius: 6px;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.06) 0 8px, rgba(0,0,0,0.02) 8px 16px),
+    linear-gradient(180deg, $metal-light 0%, $metal-mid 100%);
+  cursor: pointer; overflow: hidden;
+}
+.mystery {
+  font-family: 'NoctrdripSolidmelt', sans-serif;
+  font-size: 40px; color: rgba(28, 31, 37, 0.35); filter: blur(1px);
+}
+.identifying { border-style: solid; }
+
+/* Progress bar (tanımlanıyor) */
+.progress {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; height: 8px;
+  background: rgba(0, 0, 0, 0.25); border-radius: 4px; overflow: hidden;
+}
+.bar {
+  display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, #46e06b, #f3d979);
+  animation-name: fill; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes fill { from { width: 0; } to { width: 100%; } }
+
+/* Sağ tık menüsü */
+.menu {
+  position: fixed; z-index: 60; min-width: 150px;
+  background: #1c1f25; border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px; padding: 4px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex; flex-direction: column;
+}
+.menu button {
+  border: none; background: transparent; color: #e7e9ee; cursor: pointer;
+  text-align: left; padding: 8px 10px; font-size: 13px; border-radius: 4px;
+}
+.menu button:hover { background: rgba(255, 255, 255, 0.08); }
+.menu .danger { color: #e0524f; }
+
+/* Detay overlay (7 seviye) */
+.detailBackdrop {
+  position: absolute; inset: 0; z-index: 55;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.5); border-radius: 10px;
+}
+.detail {
+  @include metallic-surface(160deg);
+  width: 420px; max-width: 90%; padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.5); border-radius: 10px;
+}
+.detailActions { display: flex; gap: 8px; margin-top: 12px; }
+.detailActions button {
+  flex: 1; padding: 9px; border: 1px solid rgba(0, 0, 0, 0.4); border-radius: 6px;
+  cursor: pointer; font-size: 13px;
+}
+.send { background: linear-gradient(180deg, #cfeeda, #9fd8b3); color: #12351f; }
+.danger { background: linear-gradient(180deg, #f0c9c7, #e0a3a0); color: #4a1512; }

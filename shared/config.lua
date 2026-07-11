@@ -126,7 +126,37 @@ Config.VaultSpots = {
     }
 }
 Config.Vault = {
-    radius = 3.0, -- kutuyu açmak için gereken mesafe (SUNUCUDA kontrol)
-    stashSlots = 20, -- kutu stash slot sayısı
-    stashWeight = 200000 -- gram (200 kg)
+    radius = 3.0,          -- kutu/temizlik yakınlığı (SUNUCUDA kontrol)
+    stashSlots = 20,       -- (artık stash yok; geriye dönük dursun)
+    stashWeight = 200000,
+
+    -- Fiyatlandırma (est_value oranı) — SUNUCU otoritesi
+    account       = 'bank',
+    insuranceRate = 0.15,
+    securityRate  = 0.25,
+    extendRate    = 0.05,
+    extendHours   = 6,
+    systemOffer   = 0.90,
+
+    transferRadius = 3.0,  -- "Oyuncuya Sat" konumda devir yakınlığı
+
+    -- Kiralık temizlikçi: ücret + çalma riski (SUNUCU otoritesi; frontend ile eşleşir)
+    cleaners = {
+        rookie = { price = 250,  theft = 0.25 },
+        pro    = { price = 750,  theft = 0.10 },
+        elite  = { price = 1800, theft = 0.02 },
+    },
+}
+
+Config.LootGen = {
+    identifySeconds = 4,   -- tanımlama süresi (reveal modalındaki progress bar)
+
+    -- value & rarity tier'a göre ağırlıklı
+    tierBias = {
+        bronze = { low = 0.55, mid = 0.35, high = 0.10 },
+        silver = { low = 0.35, mid = 0.40, high = 0.25 },
+        gold   = { low = 0.15, mid = 0.40, high = 0.45 },
+    },
+    -- diğer alanlar (clean/repair/authentic/demand/legal)
+    neutral = { low = 0.34, mid = 0.33, high = 0.33 },
 }

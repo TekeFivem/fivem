@@ -17,9 +17,10 @@ export interface LootItem {
   name: string
   image: string
   inspected?: boolean // false → alanlar soluk/bulanık gelir
+  item?: string       // ox_inventory item adı (sunucudan)
+  count?: number      // adet
   levels: Record<LootFieldKey, LootLevel>
 }
-
 // Sıra: ilk 4 üst satır, son 3 alt satır (4 sütunlu grid'de doğal akış)
 export const LOOT_FIELDS: { key: LootFieldKey; label: string }[] = [
   { key: 'value', label: 'Değer' },
@@ -51,7 +52,7 @@ export const LOOT_MOCK: LootItem[] = [
     id: 'l4', name: 'Kırık Vazo', image: IMG, inspected: true,
     levels: { value: 'low', clean: 'low', repair: 'low', authentic: 'mid', rarity: 'low', demand: 'low', legal: 'high' },
   },
-    {
+  {
     id: 'l5', name: 'Antika Saat', image: IMG, inspected: true,
     levels: { value: 'high', clean: 'mid', repair: 'low', authentic: 'high', rarity: 'high', demand: 'mid', legal: 'high' },
   },
@@ -67,11 +68,11 @@ export const LOOT_MOCK: LootItem[] = [
     id: 'l8', name: 'Kırık Vazo', image: LaptopImg, inspected: true,
     levels: { value: 'low', clean: 'low', repair: 'low', authentic: 'mid', rarity: 'low', demand: 'low', legal: 'high' },
   },
-    {
+  {
     id: 'l9', name: 'Kırık Vazo', image: IMG, inspected: true,
     levels: { value: 'low', clean: 'low', repair: 'low', authentic: 'mid', rarity: 'low', demand: 'low', legal: 'high' },
   },
-    {
+  {
     id: '20', name: 'Antika Saat', image: IMG, inspected: true,
     levels: { value: 'high', clean: 'mid', repair: 'low', authentic: 'high', rarity: 'high', demand: 'mid', legal: 'high' },
   },

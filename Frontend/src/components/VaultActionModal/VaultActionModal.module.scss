@@ -73,3 +73,24 @@
   font-family: 'NoctrdripSolidmelt', sans-serif;
 }
 .smallBtn { padding: 6px 12px; }
+
+/* Temizlik sonucu / uyarılar */
+.errline { margin: 0 0 6px; font-size: 12px; color: #c0392b; }
+
+
+.lootRow {
+  @include metallic-surface(160deg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.lootName { font-size: 13px; }
+.lootCount { font-size: 13px; font-weight: 600; color: #1e8a4c; }
+.stolen { filter: grayscale(0.4); }
+.stolen .lootCount { color: #c0392b; }
+.overflow .lootCount { color: #b8860b; }
+

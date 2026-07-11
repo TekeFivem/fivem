@@ -80,3 +80,28 @@ CREATE TABLE IF NOT EXISTS pending_payouts (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX (citizenid)
 );
+
+-- Temizlik oturumu: tanımlama bekleyen loot (kutuya bağlı, geçici)
+CREATE TABLE IF NOT EXISTS vault_box_loot (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  box_id      INT NOT NULL,
+  owner_id    VARCHAR(64) NOT NULL,
+  item        VARCHAR(64) NOT NULL,
+  cnt         INT NOT NULL DEFAULT 1,
+  levels_json LONGTEXT NOT NULL,
+  identified  TINYINT(1) NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (box_id),
+  INDEX (owner_id)
+);
+
+-- Kalıcı loot (Loot tab)
+CREATE TABLE IF NOT EXISTS player_loot (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id    VARCHAR(64) NOT NULL,
+  item        VARCHAR(64) NOT NULL,
+  cnt         INT NOT NULL DEFAULT 1,
+  levels_json LONGTEXT NOT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (owner_id)
+);

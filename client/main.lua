@@ -137,16 +137,6 @@ RegisterNUICallback('getVault', function(_, cb)
     cb(lib.callback.await('teke_auction:getVault', false) or {})
 end)
 
--- Kutuyu aç (stash) — başarılıysa tablet kapanır, ox_inventory açılır
-RegisterNUICallback('openBox', function(data, cb)
-    local res = lib.callback.await('teke_auction:openBox', false, data)
-    if res and res.ok then
-        closeTablet() -- stash açılırken tablet arayüzü kapansın
-    end
-    cb(res or {
-        ok = false
-    })
-end)
 
 -- Kutu tamamen boşaldı → NUI'ya bildir (liste güncellensin)
 RegisterNetEvent('teke_auction:vaultBoxOpened', function(d)
@@ -246,7 +236,9 @@ RegisterNUICallback('getChat', function(data, cb)
     cb(lib.callback.await('teke_auction:getChat', false, data) or {})
 end)
 RegisterNUICallback('sendChat', function(data, cb)
-    cb(lib.callback.await('teke_auction:sendChat', false, data) or { ok = false })
+    cb(lib.callback.await('teke_auction:sendChat', false, data) or {
+        ok = false
+    })
 end)
 
 -- Server → client: yeni mesaj
@@ -255,4 +247,89 @@ RegisterNetEvent('teke_auction:chat', function(d)
         action = 'auctionChat',
         data = d
     })
+end)
+
+-- Temizle (tablet içi; item'lar doğrudan envantere) — tablet AÇIK kalır (sonuç tablette gösterilir)
+RegisterNUICallback('cleanBox', function(data, cb)
+    cb(lib.callback.await('teke_auction:cleanBox', false, data) or {
+        ok = false
+    })
+end)
+
+-- Vault: sigorta / güvenlik / uzatma / sisteme satış
+RegisterNUICallback('vaultInsure', function(data, cb)
+    cb(lib.callback.await('teke_auction:vaultInsure', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('vaultSecure', function(data, cb)
+    cb(lib.callback.await('teke_auction:vaultSecure', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('vaultExtend', function(data, cb)
+    cb(lib.callback.await('teke_auction:vaultExtend', false, data) or {
+        ok = false
+    })
+end)
+RegisterNUICallback('vaultSellSystem', function(data, cb)
+    cb(lib.callback.await('teke_auction:vaultSellSystem', false, data) or {
+        ok = false
+    })
+end)
+
+-- Vault: oyuncuya sat (konumda devir teklifi)
+RegisterNUICallback('vaultSellPlayer', function(data, cb)
+    cb(lib.callback.await('teke_auction:vaultSellPlayer', false, data) or {
+        ok = false
+    })
+end)
+
+-- Alıcıya gelen devir teklifi → ox_lib onay
+RegisterNetEvent('teke_auction:vaultOffer', function(d)
+    local accepted = lib.alertDialog({
+        header = 'Kutu Devri',
+        content = ('**%s**, sana **%s** kutusunu **$%s** karşılığında devretmek istiyor. Kabul ediyor musun?'):format(
+            d.seller or '?', d.name or ('#' .. tostring(d.boxId)), tostring(d.price)),
+        centered = true,
+        cancel = true
+    })
+    TriggerServerEvent('teke_auction:vaultOfferResponse', accepted == 'confirm')
+end)
+
+-- Devir sonrası vault listesini tazele
+RegisterNetEvent('teke_auction:vaultRefresh', function()
+    SendNUIMessage({
+        action = 'vaultRefresh'
+    })
+end)
+
+-- Basit sunucu bildirimi
+RegisterNetEvent('teke_auction:vaultToast', function(d)
+    lib.notify({
+        type = (d and d.type) or 'inform',
+        description = (d and d.msg) or ''
+    })
+end)
+
+-- Reveal modalı verisi + tanımlama + gönder/çöp
+RegisterNUICallback('getBoxLoot', function(data, cb)
+    cb(lib.callback.await('teke_auction:getBoxLoot', false, data) or { items = {}, identifySeconds = 4 })
+end)
+RegisterNUICallback('identifyLoot', function(data, cb)
+    cb(lib.callback.await('teke_auction:identifyLoot', false, data) or { ok = false })
+end)
+RegisterNUICallback('lootToTab', function(data, cb)
+    cb(lib.callback.await('teke_auction:lootToTab', false, data) or { ok = false })
+end)
+RegisterNUICallback('lootTrash', function(data, cb)
+    cb(lib.callback.await('teke_auction:lootTrash', false, data) or { ok = false })
+end)
+
+-- Loot tab (kalıcı liste)
+RegisterNUICallback('getLoot', function(_, cb)
+    cb(lib.callback.await('teke_auction:getLoot', false) or {})
+end)
+RegisterNetEvent('teke_auction:lootRefresh', function()
+    SendNUIMessage({ action = 'lootRefresh' })
 end)

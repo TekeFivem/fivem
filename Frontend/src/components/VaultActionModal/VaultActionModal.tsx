@@ -5,8 +5,8 @@ import styles from './VaultActionModal.module.scss'
 export type CleanerTier = 'rookie' | 'pro' | 'elite'
 
 export type VaultAction =
-  | { type: 'cleaner'; tier: CleanerTier }
   | { type: 'cleanSelf' }
+  | { type: 'cleaner'; tier: CleanerTier }
   | { type: 'sellSystem' }
   | { type: 'sellPlayer'; price: number }
   | { type: 'insurance' }
@@ -19,7 +19,6 @@ interface Props {
   onAction: (action: VaultAction) => void
 }
 
-// tier ↑ → çalma riski ↓ → fiyat ↑
 const CLEANERS: { id: CleanerTier; label: string; price: number; theftChance: number; desc: string }[] = [
   { id: 'rookie', label: 'Acemi Temizlikçi', price: 250,  theftChance: 0.25, desc: 'Ucuz, ama loot çalma riski yüksek.' },
   { id: 'pro',    label: 'Profesyonel',       price: 750,  theftChance: 0.10, desc: 'Dengeli fiyat, düşük risk.' },
@@ -52,59 +51,81 @@ export const VaultActionModal = ({ item, onClose, onAction }: Props) => {
           <button className={styles.close} onClick={onClose}>✕</button>
         </header>
 
-        {/* ---- Boşaltma & Satış ---- */}
+        {/* Boşaltma / Temizleme → reveal modalını açar */}
         <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Boşaltma Yöntemi</h4>
-          <div className={styles.cleaners}>
+          <h4 className={styles.sectionTitle}>Boşaltma / Temizleme</h4>
+          <div className={styles.grid}>
+            <button type="button" className={styles.card} onClick={() => fire({ type: 'cleanSelf' })}>
+              <span className={styles.cardIcon}>👷</span>
+              <span className={styles.cardName}>Kendin Temizle</span>
+              <span className={styles.cardMeta}>Ücretsiz · risk yok</span>
+              <span className={styles.cardDesc}>Lokasyona git; itemler tanımlama ekranında listelenir.</span>
+            </button>
+
             {CLEANERS.map((c) => (
-              <button key={c.id} className={styles.cleaner} onClick={() => fire({ type: 'cleaner', tier: c.id })}>
-                <span className={styles.cName}>🧹 {c.label}</span>
-                <span className={styles.cMeta}>{money(c.price)} · çalma riski %{Math.round(c.theftChance * 100)}</span>
-                <span className={styles.cDesc}>{c.desc}</span>
+              <button type="button" key={c.id} className={styles.card} onClick={() => fire({ type: 'cleaner', tier: c.id })}>
+                <span className={styles.cardIcon}>🧹</span>
+                <span className={styles.cardName}>{c.label}</span>
+                <span className={styles.cardMeta}>{money(c.price)} · risk %{Math.round(c.theftChance * 100)}</span>
+                <span className={styles.cardDesc}>{c.desc}</span>
               </button>
             ))}
           </div>
+        </section>
 
-          <button className={styles.row} onClick={() => fire({ type: 'cleanSelf' })}>
-            👷 Kendin Temizle <span className={styles.muted}>— risk yok, lokasyona gitmen gerek</span>
-          </button>
-
-          <button className={styles.row} onClick={() => fire({ type: 'sellSystem' })}>
-            💰 Sisteme Sat <span className={styles.muted}>— anında {money(systemOffer(v))}</span>
-          </button>
-
-          <div className={styles.sellRow}>
-            <span>🤝 Oyuncuya Sat</span>
-            <input
-              className={styles.price}
-              type="number"
-              min={0}
-              value={askPrice}
-              onChange={(e) => setAskPrice(Number(e.target.value))}
-            />
-            <button className={styles.smallBtn} onClick={() => fire({ type: 'sellPlayer', price: askPrice })}>
-              Listele
+        {/* Satış */}
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>Satış</h4>
+          <div className={styles.grid}>
+            <button type="button" className={styles.card} onClick={() => fire({ type: 'sellSystem' })}>
+              <span className={styles.cardIcon}>💰</span>
+              <span className={styles.cardName}>Sisteme Sat</span>
+              <span className={styles.cardMeta}>Anında {money(systemOffer(v))}</span>
+              <span className={styles.cardDesc}>Kutuyu anında sisteme devret.</span>
             </button>
+
+            <div className={styles.card}>
+              <span className={styles.cardIcon}>🤝</span>
+              <span className={styles.cardName}>Oyuncuya Sat</span>
+              <span className={styles.cardMeta}>Yakındaki oyuncuya devir</span>
+              <div className={styles.sellRow}>
+                <input className={styles.price} type="number" min={0} value={askPrice}
+                  onChange={(e) => setAskPrice(Number(e.target.value))} />
+                <button type="button" className={styles.smallBtn} onClick={() => fire({ type: 'sellPlayer', price: askPrice })}>
+                  Devret
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* ---- Koruma (modal açık kalır) ---- */}
+        {/* Koruma & Sigorta (modal açık kalır) */}
         <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Koruma</h4>
+          <h4 className={styles.sectionTitle}>Koruma & Sigorta</h4>
+          <div className={styles.grid}>
+            <button type="button" className={[styles.card, insured ? styles.cardDone : ''].join(' ')}
+              disabled={insured} onClick={() => fire({ type: 'insurance' }, false)}>
+              <span className={styles.cardIcon}>🛡️</span>
+              <span className={styles.cardName}>Sigorta</span>
+              <span className={styles.cardMeta}>{insured ? '✓ Alındı' : money(insurancePremium(v))}</span>
+              <span className={styles.cardDesc}>Soyulursan para iadesi.</span>
+            </button>
 
-          <button className={styles.row} disabled={insured} onClick={() => fire({ type: 'insurance' }, false)}>
-            🛡️ Sigorta {insured ? '✓ Alındı' : `— ${money(insurancePremium(v))}`}
-            <span className={styles.muted}> soyulursan para iadesi</span>
-          </button>
+            <button type="button" className={[styles.card, secured ? styles.cardDone : ''].join(' ')}
+              disabled={!insured || secured} onClick={() => fire({ type: 'security' }, false)}>
+              <span className={styles.cardIcon}>🔒</span>
+              <span className={styles.cardName}>Yüksek Güvenlik</span>
+              <span className={styles.cardMeta}>{secured ? '✓ Aktif' : money(securitySurcharge(v))}</span>
+              <span className={styles.cardDesc}>{insured ? 'Soyulmayı tamamen engeller.' : 'Önce sigorta gerekli.'}</span>
+            </button>
 
-          <button className={styles.row} disabled={!insured || secured} onClick={() => fire({ type: 'security' }, false)}>
-            🔒 Yüksek Güvenlik {secured ? '✓ Aktif' : `— ${money(securitySurcharge(v))}`}
-            <span className={styles.muted}>{insured ? ' soyulmayı tamamen engeller' : ' (önce sigorta gerekli)'}</span>
-          </button>
-
-          <button className={styles.row} onClick={() => fire({ type: 'extend', hours: EXTEND_HOURS }, false)}>
-            ⏱️ Süre Uzat <span className={styles.muted}>— +{EXTEND_HOURS} sa · {money(extendPrice(v))}</span>
-          </button>
+            <button type="button" className={styles.card} onClick={() => fire({ type: 'extend', hours: EXTEND_HOURS }, false)}>
+              <span className={styles.cardIcon}>⏱️</span>
+              <span className={styles.cardName}>Süre Uzat</span>
+              <span className={styles.cardMeta}>+{EXTEND_HOURS} sa · {money(extendPrice(v))}</span>
+              <span className={styles.cardDesc}>Kutunun süresini uzatır.</span>
+            </button>
+          </div>
         </section>
       </div>
     </div>
